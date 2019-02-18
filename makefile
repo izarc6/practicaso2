@@ -10,12 +10,12 @@ OBJS=$(SOURCES:.c=.o)
 
 all: $(OBJS) $(PROGRAMS)
 
-$(PROGRAMS): $(LIBRARIES) $(INCLUDES)
-    $(CC) $(LDFLAGS) $(LIBRARIES) $@.o -o $@
+mi_mkfs: mi_mkfs.o
+	$(CC) $(LDFLAGS) $(LIBRARIES) $@.o -o $@
 
 %.o: %.c $(INCLUDES)
-    $(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 .PHONY: clean
 clean:
-    rm -rf *.o *~ $(PROGRAMS)
+	rm -rf *.o *~ $(PROGRAMS)
