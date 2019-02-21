@@ -34,7 +34,8 @@ int initSB (unsigned int nbloques, unsigned int ninodos) {
   SB.posPrimerInodoLibre = 0;       //tocar nivel3
   SB.cantBloquesLibres = nbloques;  //tocar nivel3
   SB.cantInodosLibres = ninodos;    //tocar nivel3
-  bwrite(posSB, SB);
+  bwrite(posSB, SB); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
+  return 0;
 }
 
 //Inicialización del mapa de bits (todos a 0)
@@ -42,7 +43,7 @@ int initMB() {
   unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
   // Leemos superbloque para obtener las posiciones de los datos
-  struct superbloque SB = (struct superbloque) bread(posSB, SB);
+  struct superbloque SB = (struct superbloque) bread(posSB, SB); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
   for(size_t i = SB.posPrimerBloqueDatos; i <= SB.posUltimoBloqueDatos; i++) {
       bwrite(i,buffer);
   }
@@ -51,8 +52,8 @@ int initMB() {
 
 //Creación de la lista enlazada de inodos
 int initAI() {
-  struct inodo inodos [BLOCKSIZE/INODOSIZE]
-  struct superbloque SB = (struct superbloque) bread(posSB, SB);
+  struct inodo inodos [BLOCKSIZE/INODOSIZE];
+  struct superbloque SB = (struct superbloque) bread(posSB, SB); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
   int contInodos = SB.posPrimerInodoLibre + 1;
   for (size_t i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
     for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
