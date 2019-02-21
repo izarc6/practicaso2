@@ -1,3 +1,5 @@
+#include "ficheros_basico.h"
+
 struct superbloque {
    unsigned int posPrimerBloqueMB;             // Posición del primer bloque del mapa de bits en el SF
    unsigned int posUltimoBloqueMB;             // Posición del último bloque del mapa de bits en el SF
