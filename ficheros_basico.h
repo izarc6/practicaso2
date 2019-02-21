@@ -1,7 +1,7 @@
 #include <limits.h>
-#define INODOSIZE = 128;
-#define posSB = 0;      // Posiciòn superbloque
-#define tamSB = 1;      // Tamaño superbloque
+#define INODOSIZE = 128
+#define posSB = 0      // Posiciòn superbloque
+#define tamSB = 1      // Tamaño superbloque
 
 struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
    char tipo;     // Tipo ('l':libre, 'd':directorio o 'f':fichero)
@@ -28,7 +28,6 @@ struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
    1 indirecto simple, 1 indirecto doble, 1 indirecto triple */
 
    /* Utilizar una variable de alineación si es necesario para vuestra plataforma/compilador */
-   char
-       padding[INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char)];
+   char padding[INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char)];
    // Hay que restar también lo que ocupen las variables de alineación utilizadas!!!
 };
