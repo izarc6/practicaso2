@@ -62,7 +62,7 @@ int initMB() {
   memset(buffer,'\0',BLOCKSIZE);
 
   // Leemos superbloque para obtener las posiciones de los datos
-  struct superbloque SB = bread(posSB);
+  struct superbloque SB = bread(posSB, SB);
 
   for(int i = SB.posPrimerBloqueDatos; i < tamMB(nbloques); i++) {
       bwrite(i,buffer);
@@ -73,9 +73,9 @@ int initMB() {
 }
 
 int initAI() {
-  inodo inodos [BLOCKSIZE];
-  void *buffer = bread(posSB);
-  contInodos = SB.posPrimerInodoLibre + 1;
+  struct inodo inodos[BLOCKSIZE];
+  struct superbloque SB = (struct superbloque) bread(posSB, SB);
+  int contInodos = SB.posPrimerInodoLibre + 1;
   for (size_t i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
     for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
       inodos[j].tipo = 'l';
@@ -86,7 +86,7 @@ int initAI() {
         inodos[j].punterosDirectos[0] = UINT_MAX;
       }
     }
-    bwrite();
+    bwrite(i,buffer);
   }
   return 0;
 }

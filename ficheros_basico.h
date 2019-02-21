@@ -1,7 +1,8 @@
 #include <limits.h>
-#define INODOSIZE = 128
-#define posSB = 0      // Posiciòn superbloque
-#define tamSB = 1      // Tamaño superbloque
+#include "bloques.h"
+#define INODOSIZE 128
+#define posSB 0      // Posiciòn superbloque
+#define tamSB 1      // Tamaño superbloque
 
 struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
    char tipo;     // Tipo ('l':libre, 'd':directorio o 'f':fichero)

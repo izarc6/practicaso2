@@ -1,4 +1,6 @@
 #include "bloques.h"
+#include "ficheros_basico.h"
+
 static int descriptor = 0;  // Descriptor del fichero del file system
 
 
