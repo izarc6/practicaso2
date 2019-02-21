@@ -1,26 +1,28 @@
 #include "ficheros_basico.h"
 
+//Calcular tamaño necesario mapa de bits (en bloques)
 int tamMB (unsigned int nbloques) {
-  //calcular tamaño necesario mapa de bits (en bloques)
-  int bloques = (nbloques / 8) / BLOCKSIZE;
-  int resta = (nbloques % 8) % BLOCKSIZE;
+  int size = (nbloques / 8) / BLOCKSIZE;
+  int resta = (nbloques / 8) % BLOCKSIZE;
   if (resta != 0) {
-    bloques++;
+    size++;
   }
-  return bloques;
+  return size;
 }
 
-int tamAI (unsigned int inodos) {
-  //tamaño array de inodos
-  int ninodos = (nbloques * INODOSIZE) / BLOCKSIZE;
-  int resta = (nbloques * INODOSIZE) % BLOCKSIZE;
+//Calcular tamaño array de inodos
+int tamAI (unsigned int ninodos) {
+  // int ninodos = nbloques/4; --> El programa mi_mkfs.c le pasará este dato a esta función como parámetro al llamarla
+  int size = (ninodos * INODOSIZE) / BLOCKSIZE;
+  int resta = (ninodos * INODOSIZE) % BLOCKSIZE;
   if (resta != 0) {
-    ninodos++;
+    size++;
   }
-  return ninodos;
+  return size;
 }
 
-int initSB (unsigned int bloques, unsigned int inodos) {
+//Inicialización de los datos del superbloque
+int initSB (unsigned int nbloques, unsigned int ninodos) {
   struct superbloque SB;
   SB.posPrimerBloqueMB =posSB + tamSB;
   SB.posUltimoBloqueMB= SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
@@ -37,8 +39,8 @@ int initSB (unsigned int bloques, unsigned int inodos) {
 
 }
 
+//Inicialización del mapa de bits (todos a 0)
 int initMB() {
-  //poner a 0 todos los bits del mapa de bits
   unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
 
@@ -53,13 +55,14 @@ int initMB() {
 
 }
 
+//Creación de la lista enlazada de inodos
 int initAI() {
   struct inodo inodos[BLOCKSIZE];
   struct superbloque SB = (struct superbloque) bread(posSB, SB);
   int contInodos = SB.posPrimerInodoLibre + 1;
   for (size_t i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
     for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
-      inodos[j].tipo = 'l';
+      inodos[j].tipo = 'l';  //Inodo libre
       if (contInodos < SB.totInodos) {
         inodos[j].punterosDirectos[0] = contInodos;
         contInodos++;

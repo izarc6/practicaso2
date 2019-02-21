@@ -1,8 +1,8 @@
-#include <limits.h>
+#include <limits.h>   //Include para utilizar UINT_MAX (valor máximo del unsigned)
 #include "bloques.h"
-#define INODOSIZE 128
-#define posSB 0      // Posición superbloque
-#define tamSB 1      // Tamaño superbloque
+#define INODOSIZE 128 // Tamaño del inodo
+#define posSB 0       // Posición superbloque
+#define tamSB 1       // Tamaño superbloque
 
 struct superbloque {
    unsigned int posPrimerBloqueMB;             // Posición del primer bloque del mapa de bits en el SF
