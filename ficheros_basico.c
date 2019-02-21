@@ -1,23 +1,5 @@
 #include "ficheros_basico.h"
 
-struct superbloque {
-   unsigned int posPrimerBloqueMB;             // Posición del primer bloque del mapa de bits en el SF
-   unsigned int posUltimoBloqueMB;             // Posición del último bloque del mapa de bits en el SF
-   unsigned int posPrimerBloqueAI;             // Posición del primer bloque del array de inodos en el SF
-   unsigned int posUltimoBloqueAI;             // Posición del último bloque del array de inodos en el SF
-   unsigned int posPrimerBloqueDatos;          // Posición del primer bloque de datos en el SF
-   unsigned int posUltimoBloqueDatos;          // Posición del último bloque de datos en el SF
-   unsigned int posInodoRaiz;                  // Posición del inodo del directorio raíz en el AI
-   unsigned int posPrimerInodoLibre;           // Posición del primer inodo libre en el AI
-   unsigned int cantBloquesLibres;             // Cantidad de bloques libres del SF
-   unsigned int cantInodosLibres;              // Cantidad de inodos libres del SF
-   unsigned int totBloques;                    // Cantidad total de bloques del SF
-   unsigned int totInodos;                     // Cantidad total de inodos del SF
-   char padding[BLOCKSIZE - 12 * sizeof(unsigned int)]; // Relleno para que ocupe 1 bloque
-};
-
-// FUNCIONES
-
 int tamMB (unsigned int nbloques) {
   //calcular tamaño necesario mapa de bits (en bloques)
   int bloques = (nbloques / 8) / BLOCKSIZE;
@@ -30,15 +12,14 @@ int tamMB (unsigned int nbloques) {
 
 int tamAI (unsigned int inodos) {
   //tamaño array de inodos
-int ninodos = (nbloques * INODOSIZE) / BLOCKSIZE;
-int resta = (nbloques * INODOSIZE) % BLOCKSIZE;
+  int ninodos = (nbloques * INODOSIZE) / BLOCKSIZE;
+  int resta = (nbloques * INODOSIZE) % BLOCKSIZE;
   if (resta != 0) {
     ninodos++;
   }
-return ninodos;
-
-
+  return ninodos;
 }
+
 int initSB (unsigned int bloques, unsigned int inodos) {
   struct superbloque SB;
   SB.posPrimerBloqueMB =posSB + tamSB;

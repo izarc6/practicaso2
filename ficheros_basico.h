@@ -1,8 +1,24 @@
 #include <limits.h>
 #include "bloques.h"
 #define INODOSIZE 128
-#define posSB 0      // Posiciòn superbloque
+#define posSB 0      // Posición superbloque
 #define tamSB 1      // Tamaño superbloque
+
+struct superbloque {
+   unsigned int posPrimerBloqueMB;             // Posición del primer bloque del mapa de bits en el SF
+   unsigned int posUltimoBloqueMB;             // Posición del último bloque del mapa de bits en el SF
+   unsigned int posPrimerBloqueAI;             // Posición del primer bloque del array de inodos en el SF
+   unsigned int posUltimoBloqueAI;             // Posición del último bloque del array de inodos en el SF
+   unsigned int posPrimerBloqueDatos;          // Posición del primer bloque de datos en el SF
+   unsigned int posUltimoBloqueDatos;          // Posición del último bloque de datos en el SF
+   unsigned int posInodoRaiz;                  // Posición del inodo del directorio raíz en el AI
+   unsigned int posPrimerInodoLibre;           // Posición del primer inodo libre en el AI
+   unsigned int cantBloquesLibres;             // Cantidad de bloques libres del SF
+   unsigned int cantInodosLibres;              // Cantidad de inodos libres del SF
+   unsigned int totBloques;                    // Cantidad total de bloques del SF
+   unsigned int totInodos;                     // Cantidad total de inodos del SF
+   char padding[BLOCKSIZE - 12 * sizeof(unsigned int)]; // Relleno para que ocupe 1 bloque
+};
 
 struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
    char tipo;     // Tipo ('l':libre, 'd':directorio o 'f':fichero)
