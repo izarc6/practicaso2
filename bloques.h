@@ -1,5 +1,4 @@
-/*fichero bloques.h */
-
+//////////////////Includes//////////////////
 #include <stdio.h>      //printf(), fprintf(), stderr, stdout, stdin
 #include <fcntl.h>      //O_WRONLY, O_CREAT, O_TRUNC
 #include <sys/stat.h>   //S_IRUSR, S_IWUSR
@@ -8,10 +7,11 @@
 #include <errno.h>      //errno
 #include <string.h>     // strerror()
 
+//////////////////Defines//////////////////
 #define BLOCKSIZE 1024  // bytes de tamaño de bloque logico
 
+//////////////////Funciones//////////////////
 int bmount(const char *camino);
 int bumount();
 int bwrite(unsigned int nbloque, const void *buf);
 int bread(unsigned int nbloque, void *buf);
-

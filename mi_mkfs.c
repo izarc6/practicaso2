@@ -1,4 +1,3 @@
-#include "bloques.h"
 #include "ficheros_basico.h"
 
 // Uso de mi_mkfs: ./mi_mkfs <nombre_dispositivo> <nbloques>
@@ -16,12 +15,21 @@ int main(int argc, char **argv) {
     unsigned char buffer[BLOCKSIZE];
     memset(buffer,'\0',BLOCKSIZE);  // Bloque vacìo
 
-    // Escribimos nbloques vacìos para inicializar el FS
-    for(int i = 0; i < atoi(argv[2]); i++)
-    {
+    unsigned int nbloques = atoi(argv[2]);
+    unsigned int ninodos = nbloques / 4;
+
+    // Escribimos nbloques vacíos para inicializar el FS
+    for(int i = 0; i < nbloques; i++) {
         bwrite(i,buffer);
     }
 
     bumount();  // Cerramos el fichero
+
+    //Inicialización de los datos del superbloque
+    initSB(nbloques, ninodos);
+    //Inicialización del mapa de bits (todos a 0)
+    initMB();
+    //Creación de la lista enlazada de inodos
+    initAI();
 
 }

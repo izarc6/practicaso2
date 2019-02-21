@@ -1,5 +1,4 @@
 #include "bloques.h"
-#include "ficheros_basico.h"
 
 static int descriptor = 0;  // Descriptor del fichero del file system
 
@@ -15,7 +14,7 @@ int bmount(const char *camino) {
 }
 
 // bumount: "Desmonta" el file system que hemos abierto para la lectura/escritura
-int bumount() { 
+int bumount() {
     int fc = close(descriptor);
     if (fc == -1) {
         //Error
@@ -29,7 +28,7 @@ int bumount() {
 
 // escriure un bloc, el indicat per nbloque, s'sescriu *buf
 // bwrite retorna el nº de bytes que s'ha escrit o -1 si error
-int bwrite(unsigned int nbloque, const void *buf) { 
+int bwrite(unsigned int nbloque, const void *buf) {
 
     // Con 'lseek' nos desplazamos en el gestor de ficheros para coger
     // el bloque que nos interesa
