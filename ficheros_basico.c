@@ -1,5 +1,7 @@
 #include "ficheros_basico.h"
 
+//////////////////NIVEL 2//////////////////
+
 //Calcular tamaño necesario mapa de bits (en bloques)
 int tamMB (unsigned int nbloques) {
   int size = (nbloques / 8) / BLOCKSIZE;
@@ -67,5 +69,34 @@ int initAI() {
     }
     bwrite(i,buffer); //Como coño se hace esto xD
   }
+  return 0;
+}
+
+//////////////////NIVEL 3//////////////////
+int escribir_bit(unsigned int nbloque, unsigned int bit) {
+  return 0;
+}
+
+unsigned char leer_bit(unsigned int nbloque) {
+  return NULL;
+}
+
+int reservar_bloque() {
+  return 0;
+}
+
+int liberar_bloque(unsigned int nbloque) {
+  return 0;
+}
+
+int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
+  return 0;
+}
+
+int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
+  return 0;
+}
+
+int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   return 0;
 }
