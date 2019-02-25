@@ -1,7 +1,6 @@
 #include "ficheros_basico.h"
 
 //////////////////NIVEL 2//////////////////
-
 //Calcular tamaño necesario mapa de bits (en bloques)
 int tamMB (unsigned int nbloques) {
   int size = (nbloques / 8) / BLOCKSIZE;
@@ -26,7 +25,8 @@ int tamAI (unsigned int ninodos) {
 //Inicialización de los datos del superbloque
 int initSB (unsigned int nbloques, unsigned int ninodos) {
   struct superbloque SB;
-  SB.posPrimerBloqueMB = posSB + tamSB;
+  unsigned char buffer[BLOCKSIZE];
+  buffer[SB.posPrimerBloqueMB] = posSB + tamSB;
   SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
   SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
   SB.posUltimoBloqueAI = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
@@ -36,7 +36,7 @@ int initSB (unsigned int nbloques, unsigned int ninodos) {
   SB.posPrimerInodoLibre = 0;       //tocar nivel3
   SB.cantBloquesLibres = nbloques;  //tocar nivel3
   SB.cantInodosLibres = ninodos;    //tocar nivel3
-  bwrite(posSB, SB); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
+  bwrite(posSB, buffer); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
   return 0;
 }
 
@@ -74,7 +74,33 @@ int initAI() {
 
 //////////////////NIVEL 3//////////////////
 int escribir_bit(unsigned int nbloque, unsigned int bit) {
-  return 0;
+  unsigned char mascara = 128; // 10000000
+  struct superbloque SB;
+
+  // Calculamos la posición del byte en el MB, posbyte, y la posición del bit dentro de ese byte, posbit
+  unsigned int posbyte = nbloque / 8;
+  unsigned int posbit = nbloque % 8;
+
+  // Hemos de determinar luego en qué bloque del MB, nbloqueMB, se halla ese bit para leerlo
+  nbloqueMB = posbyte/BLOCKSIZE;
+
+  // Y finalmente hemos de obtener en qué posición absoluta del dispositivo virtual
+  // se encuentra ese bloque, nbloqueabs, donde leer/escribir el bit
+  nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
+
+  posbyte = posbyte % BLOCKSIZE;
+  unsigned char bufferMB[posbyte];
+  mascara >>= posbit; // desplazamiento de bits a la derecha
+  if (bit == 1) {
+    bufferMB[posbyte] |= mascara; // operador OR para bits
+  } else {
+    bufferMB[posbyte] &= ~mascara; // operadores AND y NOT para bits
+  }
+  if (bwrite(nbloqueabs, bufferMB) != -1) {
+    return 0;
+  } else {
+    return -1;
+  }
 }
 
 unsigned char leer_bit(unsigned int nbloque) {
