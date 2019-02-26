@@ -37,6 +37,9 @@
 *.x86_64
 *.hex
 
+# Executables (compiled)
+mi_mkfs
+
 # Debug files
 *.dSYM/
 *.su
@@ -51,3 +54,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
