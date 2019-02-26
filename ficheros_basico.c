@@ -25,40 +25,48 @@ int tamAI (unsigned int ninodos) {
 //Inicialización de los datos del superbloque
 int initSB (unsigned int nbloques, unsigned int ninodos) {
   struct superbloque SB;
-  const void *buffer[BLOCKSIZE];
-  memset(buffer,'\0',BLOCKSIZE);
-  buffer[SB.posPrimerBloqueMB] = posSB + tamSB;
-  buffer[SB.posUltimoBloqueMB] = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
-  buffer[SB.posPrimerBloqueAI] = SB.posUltimoBloqueMB + 1;
-  buffer[SB.posUltimoBloqueAI] = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
-  buffer[SB.posPrimerBloqueDatos] = SB.posUltimoBloqueAI + 1;
-  buffer[SB.posUltimoBloqueDatos] = nbloques - 1;
-  buffer[SB.posInodoRaiz] = 0;
-  buffer[SB.posPrimerInodoLibre] = 0;       //tocar nivel3
-  buffer[SB.cantBloquesLibres] = nbloques;  //tocar nivel3
-  buffer[SB.cantInodosLibres] = ninodos;    //tocar nivel3
-  bwrite(posSB, buffer); // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
-  return 0;
+  SB.posPrimerBloqueMB = posSB + tamSB;
+  SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
+  SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
+  SB.posUltimoBloqueAI = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
+  SB.posPrimerBloqueDatos = SB.posUltimoBloqueAI + 1;
+  SB.posUltimoBloqueDatos = nbloques - 1;
+  SB.posInodoRaiz = 0;
+  SB.posPrimerInodoLibre = 0;       //tocar nivel3
+  SB.cantBloquesLibres = nbloques;  //tocar nivel3
+  SB.cantInodosLibres = ninodos;    //tocar nivel3
+  for(size_t i = 0; i < INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char); i++){
+    SB.padding[i] = 0;
+  }
+  return bwrite(posSB, &SB);
 }
 
 //Inicialización del mapa de bits (todos a 0)
 int initMB() {
-  const void *buffer[BLOCKSIZE];
+  unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
   // Leemos superbloque para obtener las posiciones de los datos
   struct superbloque SB; // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
   for(size_t i = SB.posPrimerBloqueDatos; i <= SB.posUltimoBloqueDatos; i++) {
-      bwrite(i,buffer);
+    if (bwrite(i, buffer) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+    }
+  }
+  // Actualizamos el superbloque
+  if (bwrite(0, &SB) < 0) {
+      fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
+      return -1;
   }
   return 0;
 }
 
 //Creación de la lista enlazada de inodos
 int initAI() {
-  const void *buffer[BLOCKSIZE];
+  unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
   struct inodo inodos [BLOCKSIZE/INODOSIZE];
-  struct superbloque SB; // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
+  struct superbloque SB;
   int contInodos = SB.posPrimerInodoLibre + 1;
   for (size_t i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
     for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
@@ -70,7 +78,7 @@ int initAI() {
         buffer[inodos[j].punterosDirectos[0]] = UINT_MAX;
       }
     }
-    bwrite(i,buffer); //Como coño se hace esto xD;
+    bwrite(i, buffer);
   }
   return 0;
 }
