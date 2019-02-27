@@ -91,7 +91,7 @@ int initAI() {
         return -1;
     }
   }
-  if (bwrite(0, &SB) < 0) {
+  if (bwrite(0, &SB) == 0) {
       fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -138,7 +138,25 @@ int reservar_bloque() {
 }
 
 int liberar_bloque(unsigned int nbloque) {
-  return 0;
+  // Primero escribimos un 0 en el bloque pasado como parámetro
+  if (escribir_bit(nbloque, 0) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+  // Después leemos el Super Bloque
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+  // Sumamos una unidad a la cantidad de bloques libres
+  SB.cantBloquesLibres++;
+  // Guardamos el SB
+  if (bwrite(0, &SB) == 0) {
+      fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+  // Devolvemos el nº de bloque liberado
+  return nbloque;
 }
 
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
