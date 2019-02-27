@@ -1,6 +1,9 @@
 #include "ficheros_basico.h"
 
 //////////////////NIVEL 2//////////////////
+
+struct superbloque SB;
+
 //Calcular tamaño necesario mapa de bits (en bloques)
 int tamMB (unsigned int nbloques) {
   int size = (nbloques / 8) / BLOCKSIZE;
@@ -24,7 +27,6 @@ int tamAI (unsigned int ninodos) {
 
 //Inicialización de los datos del superbloque
 int initSB (unsigned int nbloques, unsigned int ninodos) {
-  struct superbloque SB;
   SB.posPrimerBloqueMB = posSB + tamSB;
   SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
   SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -46,7 +48,10 @@ int initMB() {
   unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
   // Leemos superbloque para obtener las posiciones de los datos
-  struct superbloque SB; // ERROR -- No se puede leer con argumento (...,SB) da fallo // ERROR -- No se puede leer con argumento (...,SB) da fallo
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
   for(size_t i = SB.posPrimerBloqueDatos; i <= SB.posUltimoBloqueDatos; i++) {
     if (bwrite(i, buffer) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
@@ -63,22 +68,32 @@ int initMB() {
 
 //Creación de la lista enlazada de inodos
 int initAI() {
-  unsigned char buffer[BLOCKSIZE];
-  memset(buffer,'\0',BLOCKSIZE);
   struct inodo inodos [BLOCKSIZE/INODOSIZE];
-  struct superbloque SB;
-  int contInodos = SB.posPrimerInodoLibre + 1;
+  // Leemos superbloque para obtener las posiciones de los datos
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+  unsigned int contInodos = SB.posPrimerInodoLibre + 1;
   for (size_t i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
     for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
-      buffer[inodos[j].tipo] = 'l';  //libre
+      inodos[j].tipo = 'l';  //libre
       if (contInodos < SB.totInodos) {
-        buffer[inodos[j].punterosDirectos[0]] = contInodos;
+        inodos[j].punterosDirectos[0] = contInodos;
         contInodos++;
       } else {
-        buffer[inodos[j].punterosDirectos[0]] = UINT_MAX;
+        inodos[j].punterosDirectos[0] = UINT_MAX;
       }
     }
-    bwrite(i, buffer);
+    // Escribimos el bloque de inodos
+    if (bwrite(i, inodos) < 0) {
+        fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
+        return -1;
+    }
+  }
+  if (bwrite(0, &SB) < 0) {
+      fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
+      return -1;
   }
   return 0;
 }
@@ -86,7 +101,10 @@ int initAI() {
 //////////////////NIVEL 3//////////////////
 int escribir_bit(unsigned int nbloque, unsigned int bit) {
   unsigned char mascara = 128; // 10000000
-  struct superbloque SB;
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c escribir_bit() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
 
   // Calculamos la posición del byte en el MB, posbyte, y la posición del bit dentro de ese byte, posbit
   unsigned int posbyte = nbloque / 8;
