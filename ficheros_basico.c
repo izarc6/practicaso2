@@ -44,6 +44,7 @@ int initSB (unsigned int nbloques, unsigned int ninodos) {
 }
 
 //Inicialización del mapa de bits (todos a 0)
+// TODO: Actualizar con funciones de Nivel 3!
 int initMB() {
   unsigned char buffer[BLOCKSIZE];
   memset(buffer,'\0',BLOCKSIZE);
@@ -130,7 +131,32 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 }
 
 unsigned char leer_bit(unsigned int nbloque) {
-  return NULL;
+  unsigned char mascara = 128; // 10000000
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+
+  // Calculamos la posición del byte en el MB, posbyte, y la posición del bit dentro de ese byte, posbit
+  unsigned int posbyte = nbloque / 8;
+  unsigned int posbit = nbloque % 8;
+
+  // Hemos de determinar luego en qué bloque del MB, nbloqueMB, se halla ese bit para leerlo
+  unsigned int nbloqueMB = posbyte/BLOCKSIZE;
+
+  // Y finalmente hemos de obtener en qué posición absoluta del dispositivo virtual
+  // se encuentra ese bloque, nbloqueabs, donde leer/escribir el bit
+  unsigned int nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
+
+  posbyte = posbyte % BLOCKSIZE;
+  unsigned char bufferMB[posbyte];
+  memset(bufferMB,'\0',posbyte);
+  mascara >>= posbit; // Desplazamiento de bits a la derecha
+  mascara &= bufferMB[posbyte]; // AND para bits
+  mascara >>= (7-posbit); // Desplazamiento de bits a la derecha, ahora el bit leido està
+                          // al final de la mascara
+
+  return mascara;  // Devolvemos el bit leido
 }
 
 int reservar_bloque() {
