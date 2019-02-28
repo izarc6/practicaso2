@@ -186,11 +186,20 @@ int liberar_bloque(unsigned int nbloque) {
 }
 
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
-  return 0;
+  //Escribe el contenido de una variable del tipo struct inodo en un determinado inodo del array de inodos
+  struct superbloque SB = bread(0,&SB);
+  if (SB == 0) {
+    fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
+  }
+  unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
+  struct inodo inodos[BLOCKSIZE/INODOSIZE];
+  bread(posInodo, &inodos); // Leemos el bloque del inodo
+  return bwrite(inodos[ninodo %(BLOCKSIZE/INODOSIZE)],&inodo);
 }
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
-  return 0;
+  
 }
 
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
