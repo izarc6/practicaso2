@@ -200,7 +200,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
   struct superbloque SB = bread(0,&SB);
   if (SB == 0) {
-    fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
+    fprintf(stderr, "Error en ficheros_basico.c leer_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
@@ -209,5 +209,42 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
 }
 
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
-  return 0;
+  //encuentra el primer idondo libre (dato alamcenado en el SB), lo reserva (con
+  //la ayuda de la funcuion escribir_inodo(), devuelve su numero y actualiza la
+  //lista de inodos libres)
+  if (bread(0,&SB) == 0) {
+    fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
+  }
+  // Si no hay inodos libres, error
+  if (SB.cantInodosLibres == 0) {
+    fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNingún inodo libre!", errno, strerror(errno));
+    return -1;
+  }
+
+  int posInodoReservado = SB.posPrimerInodoLibre;
+
+  // TODO: Verificar si esto está bien!!!
+  Inodo inodo = leer_inodo(posInodoReservado);
+  inodo.tipo = tipo;
+  inodo.permisos = permisos;
+  inodo.nlinks = 1;
+  inodo.tamEnBytesLog = 0;
+  inodo.atime = time(NULL);
+  inodo.ctime = time(NULL);
+  inodo.mtime = time(NULL);
+  inodo.numBloquesOcupados = 0;
+  memset(inodo.punterosDirectos, 0, sizeof(inodo.punterosDirectos));
+  memset(inodo.punterosIndirectos, 0, sizeof(inodo.punterosIndirectos));
+  escribir_inodo(posInodoReservado, inodo);
+
+  // Actualización superbloque
+  SB.cantInodosLibres--;
+  SB.posPrimerInodoLibre++;
+  if (bwrite(posSB, &SB) == 0) {
+    fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNo se ha podido actualizar el SB!", errno, strerror(errno));
+    return -1;
+  }
+
+  return posInodoReservado;
 }
