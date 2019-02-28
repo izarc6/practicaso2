@@ -6,6 +6,11 @@
 #define INODOSIZE 128 // Tamaño del inodo
 #define posSB 0       // Posición superbloque
 #define tamSB 1       // Tamaño superbloque
+#define NPUNTEROS (BLOCKSIZE/sizeof(unsigned int)) //256
+#define DIRECTOS 12
+#define INDIRECTOS0 (NPUNTEROS + DIRECTOS)	//268
+#define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0)   //65.804
+#define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) //16.843.020 
 
 //////////////////Structs//////////////////
 struct superbloque {
