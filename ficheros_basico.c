@@ -263,7 +263,13 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
-  return bread((ninodo %(BLOCKSIZE/INODOSIZE)),&inodo);
+  int comprobar = bread(posInodo, inodos);
+  *inodo = inodos[ninodo % (BLOCKSIZE/INODOSIZE)];
+  if (comprobar < 0) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
@@ -513,9 +519,9 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
           ptr = ptr_nivel [nivel_punteros;
           if (bloques_punteros[nivel_punteros] == 0) {
             // No cuelgan bloques ocupados, hay que liberar el bloque de punteros
-            liberar_bloque(ptr)
-            liberados++
-            nivel_punteros++
+            liberar_bloque(ptr);
+            liberados++;
+            nivel_punteros++;
             if (nivel_punteros == nRangoBL) {
               inodo.punterosIndirectos[nRangoBL-1] = 0;
             }

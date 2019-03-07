@@ -78,3 +78,9 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
 //Nivel 5
 int liberar_inodo(unsigned int ninodo);
 int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico);
+//Nivel 6
+int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes);
+int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes);
+int mi_stat_f(unsigned int ninodo, struct STAT *p_stat);
+int mi_chmod_f(unsigned int ninodo, unsigned char permisos);
+int mi_truncar_f(unsigned int ninodo, unsigned int nbytes);
