@@ -1,7 +1,6 @@
 #include "ficheros_basico.h"
 
 //////////////////NIVEL 2//////////////////
-
 struct superbloque SB;
 
 //Calcular tamaño necesario mapa de bits (en bloques)
@@ -310,7 +309,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
 }
 
 //////////////////NIVEL 4//////////////////
-
 int obtener_nrangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *ptr) {
   if (nblogico < DIRECTOS) {
     *ptr = inodo->punterosDirectos[nblogico];
@@ -439,14 +437,22 @@ if (salvar_inodo==1){
 //////////////////NIVEL 5//////////////////
 int liberar_inodo(unsigned int ninodo) {
   struct inodo inodo;
-  int bloquesLibres = liberar_bloques_inodo(ninodo, 0);
+  // Llamar a la función auxiliar liberar_bloques_inodo() para liberar todos los bloques del inodo
+  int bLiberados = liberar_bloques_inodo(ninodo, 0);
+  // Leer el inodo actualizado
   leer_inodo(ninodo, &inodo);
   if (bread(0,&SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
-  if (SB.cantBloquesLibres - bloquesLibres == 0) {
-    inodo.tipo = 'l';  //libre
+  // A la cantidad de bloques ocupados del inodo se le restará
+  // la cantidad de bloques liberados por esta función y debería ser 0
+  if (SB.cantBloquesLibres - bLiberados == 0) {  //TODO HERE
+    // Marcar el inodo como tipo libre
+    inodo.tipo = 'l';
+  } else {
+    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
   }
   inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
 	SB.posPrimerInodoLibre = ninodo;
@@ -460,5 +466,27 @@ int liberar_inodo(unsigned int ninodo) {
 }
 
 int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
-  return 0;
+  // Variables
+  struct inodo inodo;
+  unsigned int  nRangoBL, nivel_punteros, indice, ptr, nblog, ultimoBL;
+  int indices[3];
+  int ptr_nivel[3];
+  int liberados;
+
+  //Procedimiento
+  liberados = 0;
+  leer_inodo(ninodo, &inodo);
+  if (inodo.tamEnBytesLog == 0) {
+    return liberados;     // liberados vale 0 ahora mismo
+  }
+  if (inodo.tamEnBytesLog % BLOCKSIZE == 0) {
+    ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE - 1;
+  } else {
+    ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE;
+  }
+  ptr = 0;
+  if (memcmp(bloque_punteros, bufAux_punteros, BLOCKSIZE) == 0) {
+
+  }
+  return liberados;
 }

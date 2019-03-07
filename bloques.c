@@ -2,7 +2,6 @@
 
 static int descriptor = 0;  // Descriptor del fichero del file system
 
-
 // bmount: Abre el file system para la lectura/escritura
 int bmount(const char *camino) {
     int fd = open(camino, O_RDWR | O_CREAT, 0666);

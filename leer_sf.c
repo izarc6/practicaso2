@@ -2,13 +2,13 @@
 #include "bloques.h"
 
 // Uso de leer_sf: ./leer_sf <nombre_dispositivo>
-// argc=2            ^ argv[0]     ^ argv[1]       
+// argc=2            ^ argv[0]     ^ argv[1]
 
 int main(int argc, char **argv) {
 
     // Comprobaciòn sintaxis correcta
     if (strcmp(argv[1],"") == 0) {
-        fprintf(stderr,"Paràmetro no especificados. Uso: leer_sf <nombre_disp>\n");
+        fprintf(stderr,"Paràmetro no especificados. Uso: leer_sf <nombre_dispositivo>\n");
         exit(1);
     }
 
@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 
     struct superbloque SB;
 
-    if (bread(0,&SB) == 0) {
+    if (bread(0,&SB) == -1) {
         fprintf(stderr, "Error en leer_sf.c --> %d: %s\nImposible leer el superbloque!", errno, strerror(errno));
         return -1;
     }
