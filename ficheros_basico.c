@@ -186,7 +186,7 @@ int liberar_bloque(unsigned int nbloque) {
 
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
   //Escribe el contenido de una variable del tipo struct inodo en un determinado inodo del array de inodos
-  if (bread(0,&SB) == 0) {  
+  if (bread(0,&SB) == 0) {
     fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
@@ -197,7 +197,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
 }
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
-  if (bread(0,&SB) == 0) {  
+  if (bread(0,&SB) == 0) {
     fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
@@ -296,5 +296,14 @@ int obtener_indice (unsigned int nblogico, unsigned int nivel_punteros) {
 
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reservar) {
   // TODO
+  return 0;
+}
+
+//////////////////NIVEL 4//////////////////
+int liberar_inodo(unsigned int ninodo) {
+  return 0;
+}
+
+int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   return 0;
 }
