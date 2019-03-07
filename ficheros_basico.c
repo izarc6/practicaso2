@@ -159,7 +159,37 @@ unsigned char mascara = 128; // 10000000
 }
 
 int reservar_bloque() {
-  return 0;
+  // Leemos el Super Bloque
+  if (bread(0, &SB) == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+
+  // Si no hay bloques libres, acaba con -1
+  if (SB.cantBloquesLibres == 0) {
+      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible reservar bloque, no quedan libres!", errno, strerror(errno));
+      return -1;
+  }
+
+  unsigned int posBloqueMB = SB.posPrimerBloqueMB;
+  
+  unsigned char bufferMB[BLOCKSIZE];      // Buffer MB
+  memset(bufferMB,'\0',BLOCKSIZE);
+  unsigned char bufferAUX[BLOCKSIZE];   // Buffer auxiliario
+  memset(bufferAUX,255,BLOCKSIZE);
+  
+  // Recorremos los bloques del MB hasta encontrar uno que esté a 0
+  bread(posBloqueMB,bufferMB);
+  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) != 0) {
+      posBloqueMB++;
+      bread(posBloqueMB,bufferMB);
+  }
+
+  
+
+
+
+
 }
 
 int liberar_bloque(unsigned int nbloque) {
