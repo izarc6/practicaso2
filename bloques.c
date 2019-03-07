@@ -7,8 +7,9 @@ static int descriptor = 0;  // Descriptor del fichero del file system
 int bmount(const char *camino) {
     int fd = open(camino, O_RDWR | O_CREAT, 0666);
     if (fd == -1) {
-            fprintf(stderr, "ERROR fallo en abertura. \n");
-        }
+      fprintf(stderr, "ERROR fallo en abertura. \n");
+      return -1;
+    }
     descriptor = fd;
     return fd;
 }
@@ -63,6 +64,7 @@ int bread(unsigned int nbloque, void *buf) {
         int bleidos = read(descriptor, buf, BLOCKSIZE); // N. de bytes leidos
         if (bleidos == -1) {
             fprintf(stderr, "ERROR: fallo al leer el bloque. \n");
+            return -1;
         }
         return bleidos;
     }
