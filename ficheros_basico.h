@@ -10,7 +10,7 @@
 #define DIRECTOS 12
 #define INDIRECTOS0 (NPUNTEROS + DIRECTOS)	//268
 #define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0)   //65.804
-#define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) //16.843.020 
+#define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) //16.843.020
 
 //////////////////Structs//////////////////
 struct superbloque {
@@ -73,3 +73,8 @@ int liberar_bloque(unsigned int nbloque);
 int escribir_inodo(unsigned int ninodo, struct inodo inodo);
 int leer_inodo(unsigned int ninodo, struct inodo *inodo);
 int reservar_inodo(unsigned char tipo, unsigned char permisos);
+//Nivel 4
+int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reservar);
+//Nivel 5
+int liberar_inodo(unsigned int ninodo);
+int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico);
