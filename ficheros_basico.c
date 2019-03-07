@@ -160,7 +160,7 @@ unsigned char mascara = 128; // 10000000
 
 int reservar_bloque() {
   // Leemos el Super Bloque
-  if (bread(0, &SB) == -1) {
+  if (bread(posSB, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -185,11 +185,42 @@ int reservar_bloque() {
       bread(posBloqueMB,bufferMB);
   }
 
-  
+  unsigned int posbyte = posBloqueMB / 8;   // COMPROBAR SI ESTA BIEN
 
+  // Comparamos bytes individuales del buffer con bufferAUX
+  while(memcmp(bufferMB[posbyte],bufferAUX,1)!=0) {
+      posbyte++;
+  }
 
+  // Ahora que tenemos el byte que contiene un 0, buscamos el bit que està a 0
+  unsigned char mascara = 128; // 10000000
+  int posbit = 0;
+  while (bufferMB[posbyte] & mascara) {
+      posbit++;
+      bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
+  }
 
+  // Ahora posbit contiene el bit = 0
 
+  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)*BLOCKSIZE + posbyte) * 8 + posbit;
+  escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
+
+  SB.cantBloquesLibres--;     // Actualizamos cantidad de bloques libres en el SB
+  // Guardamos el SB
+  if (bwrite(posSB, &SB) == 0) {
+      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
+      return -1;
+  }
+
+  // Grabamos un buffer de 0s en la pos. nbloque
+  unsigned char bufferVacio[BLOCKSIZE];      // Buffer de ceros
+  memset(bufferVacio,'\0',BLOCKSIZE);
+  if (bwrite(nbloque, &bufferVacio) == 0) {
+      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible escribir buffer vacio", errno, strerror(errno));
+      return -1;
+  }
+
+  return nbloque;
 }
 
 int liberar_bloque(unsigned int nbloque) {
