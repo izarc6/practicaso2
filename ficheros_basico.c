@@ -59,7 +59,7 @@ int initMB() {
     }
   }
   // Actualizamos el superbloque
-  if (bwrite(0, &SB) < 0) {
+  if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -86,12 +86,12 @@ int initAI() {
       }
     }
     // Escribimos el bloque de inodos
-    if (bwrite(i, inodos) < 0) {
+    if (bwrite(i, inodos) == -1) {
         fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
         return -1;
     }
   }
-  if (bwrite(0, &SB) == 0) {
+  if (bwrite(0, &SB) == -1 {
       fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -207,7 +207,7 @@ int reservar_bloque() {
 
   SB.cantBloquesLibres--;     // Actualizamos cantidad de bloques libres en el SB
   // Guardamos el SB
-  if (bwrite(posSB, &SB) == 0) {
+  if (bwrite(posSB, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -215,7 +215,7 @@ int reservar_bloque() {
   // Grabamos un buffer de 0s en la pos. nbloque
   unsigned char bufferVacio[BLOCKSIZE];      // Buffer de ceros
   memset(bufferVacio,'\0',BLOCKSIZE);
-  if (bwrite(nbloque, &bufferVacio) == 0) {
+  if (bwrite(nbloque, &bufferVacio) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible escribir buffer vacio", errno, strerror(errno));
       return -1;
   }
@@ -237,7 +237,7 @@ int liberar_bloque(unsigned int nbloque) {
   // Sumamos una unidad a la cantidad de bloques libres
   SB.cantBloquesLibres++;
   // Guardamos el SB
-  if (bwrite(0, &SB) == 0) {
+  if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -247,7 +247,7 @@ int liberar_bloque(unsigned int nbloque) {
 
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
   //Escribe el contenido de una variable del tipo struct inodo en un determinado inodo del array de inodos
-  if (bread(0,&SB) == 0) {
+  if (bread(0,&SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
@@ -258,7 +258,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
 }
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
-  if (bread(0,&SB) == 0) {
+  if (bread(0,&SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
@@ -271,7 +271,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   //encuentra el primer idondo libre (dato alamcenado en el SB), lo reserva (con
   //la ayuda de la funcuion escribir_inodo(), devuelve su numero y actualiza la
   //lista de inodos libres)
-  if (bread(0,&SB) == 0) {
+  if (bread(0,&SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
@@ -301,7 +301,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   // Actualización superbloque
   SB.cantInodosLibres--;
   SB.posPrimerInodoLibre++;
-  if (bwrite(posSB, &SB) == 0) {
+  if (bwrite(posSB, &SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNo se ha podido actualizar el SB!", errno, strerror(errno));
     return -1;
   }
@@ -438,7 +438,25 @@ if (salvar_inodo==1){
 
 //////////////////NIVEL 5//////////////////
 int liberar_inodo(unsigned int ninodo) {
-  return 0;
+  struct inodo inodo;
+  int bloquesLibres = liberar_bloques_inodo(ninodo, 0);
+  leer_inodo(ninodo, &inodo);
+  if (bread(0,&SB) == -1) {
+    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
+  }
+  if (SB.cantBloquesLibres - bloquesLibres == 0) {
+    inodo.tipo = 'l';  //libre
+  }
+  inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
+	SB.posPrimerInodoLibre = ninodo;
+  SB.cantInodosLibres++;
+	escribir_inodo(inodo, ninodo);
+  if (bwrite(posSB, &SB) == -1) {
+    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
+  }
+	return ninodo;
 }
 
 int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {

@@ -43,6 +43,7 @@ int bwrite(unsigned int nbloque, const void *buf) {
         int bescritos = write(descriptor, buf, BLOCKSIZE);  // N. de bytes escritos
         if (bescritos == -1) {
             fprintf(stderr, "ERROR: fallo al escribir el bloque. \n");
+            return -1;
         }
         return bescritos;
     }
