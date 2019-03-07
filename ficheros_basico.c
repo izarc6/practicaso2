@@ -299,7 +299,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   return 0;
 }
 
-//////////////////NIVEL 4//////////////////
+//////////////////NIVEL 5//////////////////
 int liberar_inodo(unsigned int ninodo) {
   return 0;
 }
