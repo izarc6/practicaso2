@@ -475,6 +475,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   // Variables
   struct inodo inodo;
   unsigned int  nRangoBL, nivel_punteros, indice, ptr, nblog, ultimoBL;
+  int bloques_punteros[3][NPUNTEROS];
   int indices[3];
   int ptr_nivel[3];
   int liberados;
