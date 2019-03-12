@@ -146,9 +146,13 @@ unsigned char leer_bit(unsigned int nbloque) {
   // se encuentra ese bloque, nbloqueabs, donde leer/escribir el bit
   unsigned int nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
 
-  posbyte = posbyte % BLOCKSIZE;
-  unsigned char bufferMB[posbyte];
+  unsigned char bufferMB[BLOCKSIZE];
   memset(bufferMB,'\0',posbyte);
+  if (bread(nbloqueabs,bufferMB); == -1) {
+      fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\nImposible leer el bloque %d", errno, strerror(errno), nbloqueabs);
+      return -1;
+  }
+  
   mascara >>= posbit; // Desplazamiento de bits a la derecha
   mascara &= bufferMB[posbyte]; // AND para bits
   mascara >>= (7-posbit); // Desplazamiento de bits a la derecha, ahora el bit leido està
