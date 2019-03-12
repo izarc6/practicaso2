@@ -90,7 +90,7 @@ int initAI() {
         return -1;
     }
   }
-  if (bwrite(0, &SB) == -1 {
+  if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initAI() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
@@ -129,7 +129,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 }
 
 unsigned char leer_bit(unsigned int nbloque) {
-unsigned char mascara = 128; // 10000000
+  unsigned char mascara = 128; // 10000000
   if (bread(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\n", errno, strerror(errno));
       return -1;
@@ -371,7 +371,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   //leer_inodo (ninodo, &inodo)
   leer_inodo(ninodo, &inodo);
   ptr = 0, ptr_ant = 0, salvar_inodo = 0;
-  nRangoBL = obtener_nRangoBL(inodo,nblogico,&ptr) //ATENTOS AQUI //nRangoBL := obtener_nRangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
+  nRangoBL = obtener_nRangoBL(inodo,nblogico,&ptr); //ATENTOS AQUI //nRangoBL := obtener_nRangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
   nivel_punteros = nRangoBL;//nivel_punteros = nRangoBL
   while (nivel_punteros>0) {
     if (ptr==0) {
@@ -423,7 +423,7 @@ if (ptr==0) {
       if (nRangoBL ==0) {
       inodo.punterosDirectos[nblogico] = ptr;//
     }else{
-      buffer[indice] := ptr // (imprimirlo)
+      buffer[indice] = ptr; // (imprimirlo)
       if(bwrite(ptr_ant, buffer)==-1){
         fprintf(stderr, "Error en ficheros_basico.c traducir_bloque_inodo--> %d: %s\nbwrite ptr_ant", errno, strerror(errno));
          return -1;
@@ -463,7 +463,7 @@ int liberar_inodo(unsigned int ninodo) {
   inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
 	SB.posPrimerInodoLibre = ninodo;
   SB.cantInodosLibres++;
-	escribir_inodo(inodo, ninodo);
+	escribir_inodo(ninodo, inodo);
   if (bwrite(posSB, &SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
@@ -516,7 +516,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
         while (nivel_punteros < nRangoBL) {
           indice = indices[nivel_punteros];
           bloques_punteros[nivel_punteros][indice] = 0;
-          ptr = ptr_nivel [nivel_punteros;
+          ptr = ptr_nivel [nivel_punteros];
           if (bloques_punteros[nivel_punteros] == 0) {
             // No cuelgan bloques ocupados, hay que liberar el bloque de punteros
             liberar_bloque(ptr);
