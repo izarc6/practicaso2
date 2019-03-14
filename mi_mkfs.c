@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
 
     // Comprobaciòn sintaxis correcta
-    if (strcmp(argv[1],"") == 0 || strcmp(argv[2],"") == 0) {
+    if (argv[1] == NULL || argv[2] == NULL) {
         fprintf(stderr,"Paràmetros no especificados. Uso: mi_mkfs <nombre_disp> <nbloques>\n");
         exit(1);
     }

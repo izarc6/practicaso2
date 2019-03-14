@@ -148,11 +148,11 @@ unsigned char leer_bit(unsigned int nbloque) {
 
   unsigned char bufferMB[BLOCKSIZE];
   memset(bufferMB,'\0',posbyte);
-  if (bread(nbloqueabs,bufferMB); == -1) {
+  if (bread(nbloqueabs,bufferMB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\nImposible leer el bloque %d", errno, strerror(errno), nbloqueabs);
       return -1;
   }
-  
+
   mascara >>= posbit; // Desplazamiento de bits a la derecha
   mascara &= bufferMB[posbyte]; // AND para bits
   mascara >>= (7-posbit); // Desplazamiento de bits a la derecha, ahora el bit leido està
@@ -191,7 +191,7 @@ int reservar_bloque() {
   unsigned int posbyte = posBloqueMB / 8;   // COMPROBAR SI ESTA BIEN
 
   // Comparamos bytes individuales del buffer con bufferAUX
-  while(memcmp(bufferMB[posbyte],bufferAUX,1)!=0) {
+  while(memcmp(bufferMB, bufferAUX, 1)!=0) {
       posbyte++;
   }
 
@@ -370,12 +370,12 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   //funciones externas no tienen que preocuparse de cómo acceder a los bloques
   //físicos apuntados desde el inodo.
   struct inodo inodo;
-  int ptr, ptr_ant, salvar_inodo,nRangoBL, nivel_punteros,indice;
+  unsigned int ptr, ptr_ant, salvar_inodo,nRangoBL, nivel_punteros,indice;
   int buffer[NPUNTEROS];
   //leer_inodo (ninodo, &inodo)
   leer_inodo(ninodo, &inodo);
   ptr = 0, ptr_ant = 0, salvar_inodo = 0;
-  nRangoBL = obtener_nRangoBL(inodo,nblogico,&ptr); //ATENTOS AQUI //nRangoBL := obtener_nRangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
+  nRangoBL = obtener_nrangoBL(&inodo, nblogico, &ptr); //ATENTOS AQUI //nRangoBL := obtener_nrangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
   nivel_punteros = nRangoBL;//nivel_punteros = nRangoBL
   while (nivel_punteros>0) {
     if (ptr==0) {
@@ -498,7 +498,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   ptr = 0;
   // Recorrido BLs
   for (nblog = nblogico; nblog == ultimoBL; nblog++) {
-    nRangoBL = obtener_nRangoBL(inodo, nblog, &ptr);
+    nRangoBL = obtener_nrangoBL(&inodo, nblog, &ptr);
     if (nRangoBL < 0) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloques_inodo() --> %d: %s\n", errno, strerror(errno));
       return -1;
