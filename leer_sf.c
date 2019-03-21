@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
 
     // Comprobaciòn sintaxis correcta
     if (strcmp(argv[1],"") == 0) {
-        fprintf(stderr,"Paràmetro no especificados. Uso: leer_sf <nombre_dispositivo>\n");
+        fprintf(stderr,"Paràmetros no especificados. Uso: leer_sf <nombre_dispositivo>\n");
         exit(1);
     }
 

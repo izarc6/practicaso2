@@ -18,18 +18,26 @@ int main(int argc, char **argv) {
     unsigned int nbloques = atoi(argv[2]);
     unsigned int ninodos = nbloques / 4;
 
+    printf("Creaciòn bloques vacios, ahora escribo\n");
+
     // Escribimos nbloques vacíos para inicializar el FS
     for(int i = 0; i < nbloques; i++) {
         bwrite(i,buffer);
     }
 
-    bumount();  // Cerramos el fichero
+    printf("Escritura bloques vacìos completada.\n");
 
     //Inicialización de los datos del superbloque
     initSB(nbloques, ninodos);
+    printf("InitSB completado.\n");
     //Inicialización del mapa de bits (todos a 0)
     initMB();
+    printf("InitMB completado.\n");
     //Creación de la lista enlazada de inodos
     initAI();
+    printf("InitAI completado.\n");
+
+    bumount();  // Cerramos el fichero
+    printf("FS desmontado.\n");
 
 }
