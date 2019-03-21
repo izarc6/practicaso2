@@ -7,7 +7,7 @@
 int main(int argc, char **argv) {
 
     // Comprobaciòn sintaxis correcta
-    if (strcmp(argv[1],"") == 0) {
+    if (argv[1] == NULL) {
         fprintf(stderr,"Paràmetros no especificados. Uso: leer_sf <nombre_dispositivo>\n");
         exit(1);
     }
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     printf("\tposPrimerBloqueMB = %d\n", SB.posPrimerBloqueMB);
     printf("\tposUltimoBloqueMB = %d\n", SB.posUltimoBloqueMB);
     printf("\tposPrimerBloqueAI = %d\n", SB.posPrimerBloqueAI);
-    printf("\tposUltimoBloqueAI = %d\n", SB.posPrimerBloqueAI);
+    printf("\tposUltimoBloqueAI = %d\n", SB.posUltimoBloqueAI);
     printf("\tposPrimerBloqueDatos = %d\n", SB.posPrimerBloqueDatos);
     printf("\tposUltimoBloqueDatos = %d\n", SB.posUltimoBloqueDatos);
     printf("\tposInodoRaiz = %d\n", SB.posInodoRaiz);
@@ -39,6 +39,15 @@ int main(int argc, char **argv) {
     printf("sizeof struct inodo: %lu\n", sizeof(struct inodo));
 
     printf("\nRecorrido lista enlazada de inodos libres:\n");
+    struct inodo in;
+    for (int i=SB.posPrimerBloqueAI; i<SB.posUltimoBloqueAI; i++) {
+        if (bread(i, &in) == -1) {
+            fprintf(stderr, "Error en leer_sf.c --> %d: %s\nImposible leer el bloque inodo!", errno, strerror(errno));
+            return -1;
+        }
+        printf("HOLA BIATCH %d",i);
+        printf("%d ",in.punterosDirectos[0]);
+    }
 
     bumount();
     return 0;
