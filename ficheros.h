@@ -4,7 +4,7 @@
 #include "ficheros_basico.h"
 
 //////////////////Structs//////////////////
-struct STAT{
+struct STAT {
 	unsigned char tipo;
 	unsigned char permisos;
 	time_t atime;
