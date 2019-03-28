@@ -36,6 +36,8 @@ int initSB (unsigned int nbloques, unsigned int ninodos) {
   SB.posPrimerInodoLibre = 0;       //tocar nivel3
   SB.cantBloquesLibres = nbloques;  //tocar nivel3
   SB.cantInodosLibres = ninodos;    //tocar nivel3
+  SB.totBloques = nbloques;
+  SB.totInodos = ninodos;
   for(size_t i = 0; i < INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char); i++){
     SB.padding[i] = 0;
   }

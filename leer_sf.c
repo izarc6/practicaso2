@@ -39,16 +39,17 @@ int main(int argc, char **argv) {
     printf("sizeof struct inodo: %lu\n", sizeof(struct inodo));
 
     printf("\nRecorrido lista enlazada de inodos libres:\n");
-    struct inodo in;
-    for (int i=SB.posPrimerBloqueAI; i<SB.posUltimoBloqueAI; i++) {
-        if (bread(i, &in) == -1) {
-            fprintf(stderr, "Error en leer_sf.c --> %d: %s\nImposible leer el bloque inodo!", errno, strerror(errno));
-            return -1;
+    struct inodo in[BLOCKSIZE/INODOSIZE];
+    for (size_t i=SB.posPrimerBloqueAI; i<=SB.posUltimoBloqueAI; i++) {
+        for (size_t j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
+            if (bread(i, in) == -1) {
+                fprintf(stderr, "Error en leer_sf.c --> %d: %s\nImposible leer el bloque inodo!", errno, strerror(errno));
+                return -1;
+            }
+            printf("%d ",in[j].punterosDirectos[0]);
         }
-        printf("HOLA BIATCH %d",i);
-        printf("%d ",in.punterosDirectos[0]);
     }
-
+    printf("\n");
     bumount();
     return 0;
 }
