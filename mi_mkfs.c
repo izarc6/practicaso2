@@ -36,6 +36,9 @@ int main(int argc, char **argv) {
     //Creación de la lista enlazada de inodos
     initAI();
     printf("InitAI completado.\n");
+    //Creaciòn del directorio raiz
+    reservar_inodo('d',7);
+    printf("Creaciòn directorio raìz completada.\n");
 
     bumount();  // Cerramos el fichero
     printf("FS desmontado.\n");

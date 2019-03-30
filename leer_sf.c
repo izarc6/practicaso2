@@ -46,7 +46,19 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Error en leer_sf.c --> %d: %s\nImposible leer el bloque inodo!", errno, strerror(errno));
                 return -1;
             }
-            printf("%d ",in[j].punterosDirectos[0]);
+            // No imprimimos toda la lista para que no pete el terminal
+            if (i >= SB.posPrimerBloqueAI && i < SB.posPrimerBloqueAI+3) {
+                printf("%d ",in[j].punterosDirectos[0]);
+            }
+            if (i >= SB.posPrimerBloqueAI && i < SB.posUltimoBloqueAI-3) {
+                if (i % 500 == 0) {
+                    printf(". ");
+                }
+            }
+            if (i >= SB.posUltimoBloqueAI-3 && i <= SB.posUltimoBloqueAI) {
+                printf("%d ",in[j].punterosDirectos[0]);
+            }
+            
         }
     }
     printf("\n");

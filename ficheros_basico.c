@@ -59,11 +59,29 @@ int initMB() {
       return -1;
     }
   }
+  
+  // Actualizamos mapa de bits
+  int bloquesLibres = SB.cantBloquesLibres;
+  escribir_bit(posSB,1);
+  bloquesLibres--;
+  
+  for (int i=SB.posPrimerBloqueMB; i<=SB.posUltimoBloqueMB; i++) {
+    escribir_bit(i,1);
+    bloquesLibres--;
+  }
+  for (int i=SB.posPrimerBloqueAI; i<=SB.posUltimoBloqueAI; i++) {
+    escribir_bit(i,1);
+    bloquesLibres--;
+  }
+
+  SB.cantBloquesLibres = bloquesLibres;
+  
   // Actualizamos el superbloque
   if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
+  
   return 0;
 }
 
