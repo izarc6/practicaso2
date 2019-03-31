@@ -53,7 +53,7 @@ int initMB() {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
-  for(size_t i = SB.posPrimerBloqueDatos; i <= SB.posUltimoBloqueDatos; i++) {
+  for(size_t i = SB.posPrimerBloqueMB; i <= SB.posUltimoBloqueMB; i++) {
     if (bwrite(i, buffer) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
@@ -136,6 +136,8 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
   // se encuentra ese bloque, nbloqueabs, donde leer/escribir el bit
   unsigned int nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
 
+  printf("DEBUG - Escribir bit - Bloque/Bloque absoluto %d/%d\n",nbloque,nbloqueabs);
+
   posbyte = posbyte % BLOCKSIZE;
   unsigned char bufferMB[posbyte];
   memset(bufferMB,'\0',posbyte);
@@ -196,20 +198,21 @@ int reservar_bloque() {
 
   unsigned int posBloqueMB = SB.posPrimerBloqueMB;
 
+  printf("DEBUG - posPrimerBloqueMB: %d\n", posBloqueMB);
+
   unsigned char bufferMB[BLOCKSIZE];      // Buffer MB
   memset(bufferMB,'\0',BLOCKSIZE);
   unsigned char bufferAUX[BLOCKSIZE];   // Buffer auxiliario
   memset(bufferAUX,255,BLOCKSIZE);
 
-  
-
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
-  bread(posBloqueMB,&bufferMB);
+  bread(posBloqueMB,bufferMB);
   
   while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0) {
       //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
+      printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
       posBloqueMB++;
-      bread(posBloqueMB,&bufferMB);
+      bread(posBloqueMB,bufferMB);
   }
 
   printf("DEBUG - posBloqueMB: %d\n", posBloqueMB);
@@ -218,7 +221,7 @@ int reservar_bloque() {
 
 
   // Comparamos bytes individuales del buffer con bufferAUX
-  while(memcmp(bufferMB, bufferAUX, 1) == 0) {
+  while(memcmp(bufferMB, bufferAUX, 1) != 0) {
       printf("%d ",posbyte);
       (*bufferMB)++;
       posbyte++;
@@ -239,7 +242,7 @@ int reservar_bloque() {
 
   // Ahora posbit contiene el bit = 0
 
-  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)*BLOCKSIZE + posbyte) * 8 + posbit;
+  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)* BLOCKSIZE + posbyte) * 8 + posbit;
   escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
 
   printf("DEBUG - nbloque: %d\n", nbloque);
