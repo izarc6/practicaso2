@@ -201,34 +201,50 @@ int reservar_bloque() {
   unsigned char bufferAUX[BLOCKSIZE];   // Buffer auxiliario
   memset(bufferAUX,255,BLOCKSIZE);
 
+  
+
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
-  bread(posBloqueMB,bufferMB);
-  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) != 0) {
+  bread(posBloqueMB,&bufferMB);
+  
+  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0) {
+      //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
       posBloqueMB++;
-      bread(posBloqueMB,bufferMB);
+      bread(posBloqueMB,&bufferMB);
   }
 
-  unsigned int posbyte = posBloqueMB / 8;   // COMPROBAR SI ESTA BIEN
+  printf("DEBUG - posBloqueMB: %d\n", posBloqueMB);
+
+  unsigned int posbyte = 0;
+
 
   // Comparamos bytes individuales del buffer con bufferAUX
-  while(memcmp(bufferMB, bufferAUX, 1)!=0) {
+  while(memcmp(bufferMB, bufferAUX, 1) == 0) {
+      printf("%d ",posbyte);
+      (*bufferMB)++;
       posbyte++;
   }
+
+  printf("DEBUG - posbyte: %d\n", posbyte);
 
   // Ahora que tenemos el byte que contiene un 0, buscamos el bit que està a 0
   unsigned char mascara = 128; // 10000000
   int posbit = 0;
+  
   while (bufferMB[posbyte] & mascara) {
       posbit++;
       bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
   }
+
+  printf("DEBUG - posbit: %d\n", posbit);
 
   // Ahora posbit contiene el bit = 0
 
   int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)*BLOCKSIZE + posbyte) * 8 + posbit;
   escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
 
-  SB.cantBloquesLibres--;     // Actualizamos cantidad de bloques libres en el SB
+  printf("DEBUG - nbloque: %d\n", nbloque);
+
+  SB.cantBloquesLibres = SB.cantBloquesLibres - 1;     // Actualizamos cantidad de bloques libres en el SB
   // Guardamos el SB
   if (bwrite(posSB, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
@@ -258,7 +274,7 @@ int liberar_bloque(unsigned int nbloque) {
       return -1;
   }
   // Sumamos una unidad a la cantidad de bloques libres
-  SB.cantBloquesLibres++;
+  SB.cantBloquesLibres = SB.cantBloquesLibres + 1;
   // Guardamos el SB
   if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));
