@@ -88,9 +88,12 @@ int main(int argc, char **argv) {
     char mtime[80];
     char ctime[80];
     struct inodo inodo;
-    int ninodo = 0; // DEBUG: o 0 o 1
+    int ninodo = 0;
 
-    leer_inodo(ninodo,&inodo);
+    if (leer_inodo(ninodo,&inodo) == -1) {
+      fprintf(stderr, "Error en leer_sf.c %d: %s\nImposible leer el inodo", errno, strerror(errno));
+      return -1;
+    }
     ts = localtime(&inodo.atime);
     strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
     ts = localtime(&inodo.mtime);

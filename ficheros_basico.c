@@ -155,7 +155,6 @@ unsigned char leer_bit(unsigned int nbloque) {
       fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
-
   // Calculamos la posición del byte en el MB, posbyte, y la posición del bit dentro de ese byte, posbit
   unsigned int posbyte = nbloque / 8;
   unsigned int posbit = nbloque % 8;
@@ -167,18 +166,19 @@ unsigned char leer_bit(unsigned int nbloque) {
   // se encuentra ese bloque, nbloqueabs, donde leer/escribir el bit
   unsigned int nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
 
+  posbyte = posbyte % BLOCKSIZE;
   unsigned char bufferMB[BLOCKSIZE];
-  memset(bufferMB,'\0',posbyte);
-  if (bread(nbloqueabs,bufferMB) == -1) {
+  memset(bufferMB,'\0',BLOCKSIZE);
+  if (bread(nbloqueabs,&bufferMB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c leer_bit() --> %d: %s\nImposible leer el bloque %d", errno, strerror(errno), nbloqueabs);
       return -1;
   }
 
   mascara >>= posbit; // Desplazamiento de bits a la derecha
+  printf("cocbyte %d\n", posbyte);
   mascara &= bufferMB[posbyte]; // AND para bits
   mascara >>= (7-posbit); // Desplazamiento de bits a la derecha, ahora el bit leido està
                           // al final de la mascara
-
   return mascara;  // Devolvemos el bit leido
 }
 
@@ -296,7 +296,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   int comprobar = bread(posInodo, inodos);
   *inodo = inodos[ninodo % (BLOCKSIZE/INODOSIZE)];
-  return (comprobar < 0) ? -1 : 0;
+	return (comprobar < 0) ? -1 : 0;
 }
 
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {

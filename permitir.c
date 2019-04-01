@@ -3,12 +3,12 @@
 //llamada a mi_chmod_f() con los argumentos recibidos, convertidos a entero
 //desmontar dispositivo
 
-#include "directorios.h"
+#include "ficheros.h"
 
 
 int main(int argc, char **argv) {
 	if (argc != 4) {
-		printf("Sintaxis: truncar <nombre_dispositivo> <ninodo> <permisos>\n");
+		printf("Sintaxis: permitir <nombre_dispositivo> <ninodo> <permisos>\n");
 		return -1;
 	}
 
