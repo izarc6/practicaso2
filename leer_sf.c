@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     // Reservamos y liberamos un bloque
     int bloque_reservado = reservar_bloque();
     bread(posSB,&SB);
-    printf("Reservado el bloque %d\nCantidad actual de bloques libres: %d\n", bloque_reservado, SB.cantBloquesLibres);
+    printf("\nReservado el bloque %d\nCantidad actual de bloques libres: %d\n", bloque_reservado, SB.cantBloquesLibres);
     liberar_bloque(bloque_reservado);
     bread(posSB,&SB);
     printf("Liberado el bloque %d\nCantidad actual de bloques libres: %d\n\n", bloque_reservado, SB.cantBloquesLibres);

@@ -175,7 +175,6 @@ unsigned char leer_bit(unsigned int nbloque) {
   }
 
   mascara >>= posbit; // Desplazamiento de bits a la derecha
-  printf("cocbyte %d\n", posbyte);
   mascara &= bufferMB[posbyte]; // AND para bits
   mascara >>= (7-posbit); // Desplazamiento de bits a la derecha, ahora el bit leido està
                           // al final de la mascara
