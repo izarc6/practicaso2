@@ -12,25 +12,25 @@ int main(int argc, char **argv) {
 
 
 	//Validacion de sintaxis
-  if (argc != 4) {
-    printf("Sintaxis: truncar <nombre_dispositivo> <ninodo> <nbytes>\n");
-    return -1;
-  }
-  unsigned int ninodo = atoi(argv[2]);
+  	if (argc != 4) {
+    	printf("Sintaxis: truncar <nombre_dispositivo> <ninodo> <nbytes>\n");
+    	return -1;
+  	}
+  	unsigned int ninodo = atoi(argv[2]);
 	unsigned int nbytes = atoi(argv[3]);
 
-  		if (bmount(argv[1]) == -1) {
+  	if (bmount(argv[1]) == -1) {
         fprintf(stderr, "Error en truncar.c --> %d: %s\nFallo en bmount", errno, strerror(errno));
         return -1;
-  		}
-  			mi_truncar_f(ninodo, nbytes);
+  	}
+  	mi_truncar_f(ninodo, nbytes);
 
-  		  bumount();
+  	bumount();
 
   	return 0;
-  }
-
-
-
-
 }
+
+
+
+
+

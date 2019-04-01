@@ -281,10 +281,12 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     fprintf(stderr, "Error en ficheros_basico.c escribir_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
-  unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
+  unsigned int posInodo = SB.posPrimerBloqueAI + ((ninodo * INODOSIZE) / BLOCKSIZE);
+  printf("DEBUG - escribir_inodo - posInodo: %d\n",posInodo);
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   bread(posInodo, &inodos); // Leemos el bloque del inodo
-  return bwrite((ninodo %(BLOCKSIZE/INODOSIZE)),&inodo);
+  inodos[ninodo%(BLOCKSIZE/INODOSIZE)] = inodo;
+  return bwrite(posInodo,&inodos);
 }
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
@@ -293,7 +295,6 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     return -1;
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
-  printf("coky %d\n", posInodo);
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   int comprobar = bread(posInodo, inodos);
   *inodo = inodos[ninodo % (BLOCKSIZE/INODOSIZE)];

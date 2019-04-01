@@ -32,9 +32,8 @@ int main(int argc, char **argv) {
 
 			int j =mi_write_f(resNinodo,string,OFFSETS[0],longitud);
 			memset(buffer,0,longitud);
-			mi_stat_f(resNinodo,&state);
-			sprintf(strings,"\nNº inodo reservado=%d\noffset:%d\nBytes escritos: %d\nstat.tamEnBytesLog=%d\nstat.numBloquesOcupados=%d\n",resNinodo,OFFSETS[0],j, state.tamEnBytesLog,state.numBloquesOcupados);
-			write(2,strings,strlen(strings));
+			mi_stat_f(resNinodo,state);
+			//fprintf(stderr,"\nNº inodo reservado=%d\noffset:%d\nBytes escritos: %d\nstat.tamEnBytesLog=%d\nstat.numBloquesOcupados=%d\n",resNinodo,OFFSETS[0],j, state.tamEnBytesLog,state.numBloquesOcupados);
 
 			for (int i = 1; i < 5; ++i){
 			if (reserva_inodo!=0){
@@ -43,9 +42,8 @@ int main(int argc, char **argv) {
 			int j=mi_write_f(resNinodo,string,OFFSETS[i],longitud);
 			memset(buffer,0,longitud);
 
-			mi_stat_f(resNinodo,&state);
-			sprintf(strings,"\nNº inodo reservado=%d\noffset:%d\nBytes escritos: %d\nstat.tamEnBytesLog=%d\nstat.numBloquesOcupados=%d\n",resNinodo,OFFSETS[i],j, state.tamEnBytesLog,state.numBloquesOcupados);
-			write(2,strings,strlen(strings));
+			mi_stat_f(resNinodo,state);
+			//fprintf(stderr,"\nNº inodo reservado=%d\noffset:%d\nBytes escritos: %d\nstat.tamEnBytesLog=%d\nstat.numBloquesOcupados=%d\n",resNinodo,OFFSETS[i],j, state.tamEnBytesLog,state.numBloquesOcupados);
 
 
 			}
@@ -54,8 +52,6 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Error en escribir.c --> %d: %s\n", errno, strerror(errno));
 			return -1;
 		}
-			return 0;
-		}
-
-
+		return 0;
 }
+

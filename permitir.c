@@ -3,7 +3,7 @@
 //llamada a mi_chmod_f() con los argumentos recibidos, convertidos a entero
 //desmontar dispositivo
 
-#include "directorios.h"
+#include "ficheros.h"
 
 
 int main(int argc, char **argv) {
@@ -12,16 +12,17 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	  unsigned int ninodo = atoi(argv[2]);
-		unsigned char permisos = argv[3];
+	unsigned int ninodo = atoi(argv[2]);
+	unsigned char permisos;
+	strncpy(permisos,argv[3],1);
 
-		if (bmount(argv[1]) == -1) {
+	if (bmount(argv[1]) == -1) {
       fprintf(stderr, "Error en permitir.c --> %d: %s\nFallo en bmount", errno, strerror(errno));
       return -1;
-		}
-			mi_chmod_f(ninodo, permisos);
+	}
+	mi_chmod_f(ninodo, permisos);
 
-		   bumount();
+	bumount();
 
 	return 0;
 }
