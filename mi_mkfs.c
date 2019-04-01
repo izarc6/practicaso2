@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 
     // Comprobaciòn sintaxis correcta
     if (argv[1] == NULL || argv[2] == NULL) {
-        fprintf(stderr,"Paràmetros no especificados. Uso: mi_mkfs <nombre_disp> <nbloques>\n");
+        fprintf(stderr,"Parámetros no especificados. Uso: mi_mkfs <nombre_disp> <nbloques>\n");
         exit(1);
     }
 
@@ -18,14 +18,14 @@ int main(int argc, char **argv) {
     unsigned int nbloques = atoi(argv[2]);
     unsigned int ninodos = nbloques / 4;
 
-    printf("Creaciòn bloques vacios, ahora escribo\n");
+    printf("Creación bloques vacios, ahora escribo\n");
 
     // Escribimos nbloques vacíos para inicializar el FS
     for(int i = 0; i < nbloques; i++) {
         bwrite(i,buffer);
     }
 
-    printf("Escritura bloques vacìos completada.\n");
+    printf("Escritura bloques vacíos completada.\n");
 
     //Inicialización de los datos del superbloque
     initSB(nbloques, ninodos);
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     printf("InitAI completado.\n");
     //Creaciòn del directorio raiz
     reservar_inodo('d',7);
-    printf("Creaciòn directorio raìz completada.\n");
+    printf("Creación directorio raíz completada.\n");
 
     bumount();  // Cerramos el fichero
     printf("FS desmontado.\n");

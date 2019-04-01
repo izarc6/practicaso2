@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
             if (i >= SB.posUltimoBloqueAI-3 && i <= SB.posUltimoBloqueAI) {
                 printf("%d ",in[j].punterosDirectos[0]);
             }
-            
+
         }
     }
     printf("\n");
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     printf("Valor del bit leido en posUltimoBloqueDatos (bloque n.%d): %d\n\n", SB.posUltimoBloqueDatos, leer_bit(SB.posUltimoBloqueDatos));
 
     // Lectura datos inodo del directorio raìz
-    printf("Lectura datos del inodo del directorio raìz\n");
+    printf("Lectura datos del inodo del directorio raíz\n");
     struct tm *ts;
     char atime[80];
     char mtime[80];
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     struct inodo inodo;
     int ninodo = 0; // DEBUG: o 0 o 1
 
-    leer_inodo(ninodo,&inodo); 
+    leer_inodo(ninodo,&inodo);
     ts = localtime(&inodo.atime);
     strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
     ts = localtime(&inodo.mtime);
@@ -104,9 +104,8 @@ int main(int argc, char **argv) {
     printf("mtime: %s\n", mtime);
     printf("ctime: %s\n", ctime);
     printf("N. links: %d\n", inodo.nlinks);
-    printf("Tamaño en bytes lògicos: %d\n", inodo.tamEnBytesLog);
+    printf("Tamaño en bytes lógicos: %d\n", inodo.tamEnBytesLog);
     printf("N. de bloques ocupados: %d\n", inodo.numBloquesOcupados);
-
 
     bumount();
     printf("Fichero \"%s\" desmontado con éxito.\n",argv[1]);

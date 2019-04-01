@@ -59,12 +59,12 @@ int initMB() {
       return -1;
     }
   }
-  
+
   // Actualizamos mapa de bits
   int bloquesLibres = SB.cantBloquesLibres;
   escribir_bit(posSB,1);
   bloquesLibres--;
-  
+
   for (int i=SB.posPrimerBloqueMB; i<=SB.posUltimoBloqueMB; i++) {
     escribir_bit(i,1);
     bloquesLibres--;
@@ -75,13 +75,13 @@ int initMB() {
   }
 
   SB.cantBloquesLibres = bloquesLibres;
-  
+
   // Actualizamos el superbloque
   if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
-  
+
   return 0;
 }
 
@@ -204,7 +204,7 @@ int reservar_bloque() {
 
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
   bread(posBloqueMB,bufferMB);
-  
+
   while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0 && posBloqueMB <= SB.posUltimoBloqueMB) {
       //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
       printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
@@ -224,7 +224,7 @@ int reservar_bloque() {
   // Ahora que tenemos el byte que contiene un 0, buscamos el bit que està a 0
   unsigned char mascara = 128; // 10000000
   int posbit = 0;
-  
+
   while (bufferMB[posbyte] & mascara) {
       posbit++;
       bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
@@ -296,11 +296,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   int comprobar = bread(posInodo, inodos);
   *inodo = inodos[ninodo % (BLOCKSIZE/INODOSIZE)];
-  if (comprobar < 0) {
-		return -1;
-	} else {
-		return 0;
-	}
+  return (comprobar < 0) ? -1 : 0;
 }
 
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
