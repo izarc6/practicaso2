@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////PERMITIR.C////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-#include "directorios.h"
+#include "ficheros.h"
 
 
 int main(int argc, char **argv) {
@@ -22,27 +22,27 @@ int main(int argc, char **argv) {
 				switch (error) {
 					case -1:
 						printf("ERROR: EXTRACCIÓN INCORECTA DEL CAMINO\n");
-						return ERROR_EXTRAER_CAMINO;
+						return -1;
 						break;
 					case -2:
 						printf("ERROR: NO EXISTE ENTRADA CONSULTA\n");
-						return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
+						return -2;
 						break;
 					case -3:
 						printf("ERROR: NO EXISTE DIRECTORIO INTERMEDIO\n");
-						return ERROR_NO_EXISTE_DIRECTORIO_INTERMEDIO;
+						return -3;
 						break;
 					case -4:
 						printf("ERROR DE PERMISOS:NO PERMISOS DE ESCRITURA\n");
-						return ERROR_PERMISO_ESCRITURA;
+						return -4;
 						break;
 					case -5:
 						printf("ERROR: LA ENTRADA YA EXISTE\n");
-						return ERROR_ENTRADA_YA_EXISTENTE;
+						return -5;
 						break;
 					case -8:
 						printf("ERROR DE PERMISOS:NO PERMISOS DE LECTURA\n");
-						return ERROR_PERMISO_LECTURA;
+						return -8;
 						break;
 				}
 			}
