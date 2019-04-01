@@ -293,6 +293,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     return -1;
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + (ninodo * INODOSIZE) / BLOCKSIZE;
+  printf("coky %d\n", posInodo);
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   int comprobar = bread(posInodo, inodos);
   *inodo = inodos[ninodo % (BLOCKSIZE/INODOSIZE)];
@@ -318,6 +319,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   // TODO: Verificar si esto está bien!!!
   struct inodo in;
   leer_inodo(posInodoReservado, &in);
+
   in.tipo = tipo;
   in.permisos = permisos;
   in.nlinks = 1;
@@ -331,8 +333,8 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   escribir_inodo(posInodoReservado, in);
 
   // Actualización superbloque
-  SB.cantInodosLibres--;
-  SB.posPrimerInodoLibre++;
+  SB.cantInodosLibres = SB.cantInodosLibres - 1;
+  SB.posPrimerInodoLibre = in.punterosDirectos[0];
   if (bwrite(posSB, &SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNo se ha podido actualizar el SB!", errno, strerror(errno));
     return -1;
