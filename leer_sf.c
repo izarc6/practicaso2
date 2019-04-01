@@ -110,6 +110,21 @@ int main(int argc, char **argv) {
     printf("Tamaño en bytes lógicos: %d\n", inodo.tamEnBytesLog);
     printf("N. de bloques ocupados: %d\n", inodo.numBloquesOcupados);
 
+    bread(posSB,&SB);
+    printf("DEBUG - posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);
+
+    printf("\nTest de las funciones de traducciòn de bloques inodos\nReservando... ");
+    printf("Se ha reservado el inodo n.%d\n",reservar_inodo('f',6));
+
+    bread(posSB,&SB);
+    printf("DEBUG - posPrimerInodoLibre (después de la reserva): %d\n",SB.posPrimerInodoLibre);
+
+    printf("Traducciòn bloque lògico n.8: %d\n",traducir_bloque_inodo(1,8,'0'));
+    printf("Traducciòn bloque lògico n.204: %d\n",traducir_bloque_inodo(1,204,'0'));
+    printf("Traducciòn bloque lògico n.30.004: %d\n",traducir_bloque_inodo(1,30004,'0'));
+    printf("Traducciòn bloque lògico n.400.004: %d\n",traducir_bloque_inodo(1,400004,'0'));
+    printf("Traducciòn bloque lògico n.16.843.019: %d\n",traducir_bloque_inodo(1,16843019,'0'));
+
     bumount();
     printf("Fichero \"%s\" desmontado con éxito.\n",argv[1]);
     return 0;

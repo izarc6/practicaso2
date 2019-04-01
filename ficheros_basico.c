@@ -206,7 +206,7 @@ int reservar_bloque() {
 
   while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0 && posBloqueMB <= SB.posUltimoBloqueMB) {
       //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
-      printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
+      //printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
       posBloqueMB++;
       bread(posBloqueMB,bufferMB);
   }
@@ -281,11 +281,12 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     return -1;
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + ((ninodo * INODOSIZE) / BLOCKSIZE);
-  printf("DEBUG - escribir_inodo - posInodo: %d\n",posInodo);
+  //printf("DEBUG - escribir_inodo - posInodo: %d\n",posInodo);
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
-  bread(posInodo, &inodos); // Leemos el bloque del inodo
-  inodos[ninodo%(BLOCKSIZE/INODOSIZE)] = inodo;
-  return bwrite(posInodo,&inodos);
+  bread(posInodo, inodos); // Leemos el bloque del inodo
+  memcpy(&inodos[ninodo%(BLOCKSIZE/INODOSIZE)],&inodo, INODOSIZE);
+
+  return bwrite(posInodo, inodos);
 }
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
@@ -319,6 +320,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   // TODO: Verificar si esto está bien!!!
   struct inodo in;
   leer_inodo(posInodoReservado, &in);
+  
+  // Actualización superbloque
+  SB.posPrimerInodoLibre = in.punterosDirectos[0];
+  SB.cantInodosLibres = SB.cantInodosLibres - 1;
+  if (bwrite(posSB, &SB) == -1) {
+    fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNo se ha podido actualizar el SB!", errno, strerror(errno));
+    return -1;
+  }
 
   in.tipo = tipo;
   in.permisos = permisos;
@@ -331,14 +340,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   memset(in.punterosDirectos, 0, sizeof(in.punterosDirectos));
   memset(in.punterosIndirectos, 0, sizeof(in.punterosIndirectos));
   escribir_inodo(posInodoReservado, in);
-
-  // Actualización superbloque
-  SB.cantInodosLibres = SB.cantInodosLibres - 1;
-  SB.posPrimerInodoLibre = in.punterosDirectos[0];
-  if (bwrite(posSB, &SB) == -1) {
-    fprintf(stderr, "Error en ficheros_basico.c reservar_inodo() --> %d: %s\nNo se ha podido actualizar el SB!", errno, strerror(errno));
-    return -1;
-  }
 
   return posInodoReservado;
 }
@@ -359,7 +360,7 @@ int obtener_nrangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *
     return 3;
   } else {
     *ptr = 0;
-    fprintf(stderr, "Bloque lógico fuera de rango --> %d: %s\n", errno, strerror(errno));
+    fprintf(stderr, "Error en ficheros_basico.c obtener_nrangoBL()\nBloque lógico fuera de rango --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
 }
@@ -389,7 +390,7 @@ int obtener_indice (unsigned int nblogico, unsigned int nivel_punteros) {
 }
 
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reservar) {
-  //Esta función se encarga de obtener el nº  de bloque físico correspondiente a
+  //Esta función se encarga de obtener el nº de bloque físico correspondiente a
   //un bloque lógico determinado del inodo indicado. Enmascara la gestión de los
   //diferentes rangos de punteros directos e indirectos del inodo, de manera que
   //funciones externas no tienen que preocuparse de cómo acceder a los bloques
@@ -397,7 +398,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   struct inodo inodo;
   unsigned int ptr, ptr_ant, salvar_inodo,nRangoBL, nivel_punteros,indice;
   int buffer[NPUNTEROS];
-  //leer_inodo (ninodo, &inodo)
   leer_inodo(ninodo, &inodo);
   ptr = 0, ptr_ant = 0, salvar_inodo = 0;
   nRangoBL = obtener_nrangoBL(&inodo, nblogico, &ptr); //ATENTOS AQUI //nRangoBL := obtener_nrangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
