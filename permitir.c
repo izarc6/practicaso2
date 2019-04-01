@@ -3,7 +3,7 @@
 //llamada a mi_chmod_f() con los argumentos recibidos, convertidos a entero
 //desmontar dispositivo
 
-#include "ficheros.h"
+#include "directorios.h"
 
 
 int main(int argc, char **argv) {
