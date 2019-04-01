@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <string.h>
 #include "ficheros.h"
 
 
@@ -11,7 +9,10 @@ como parámetro para mi_write_f().
 //pasaremos el argumento por parametro, y calculamos su longitud con streln
 int main(int argc, char **argv) {
 
-	if(argc==4){
+	if(argc!=4){
+    printf("Sintaxis: escribir <nombre_dispositivo> <$(cat fichero)> <diferentes_inodos>\nOffsets: 0, 5120, 256000, 30720000, 71680000");
+    return -1;
+  }
 		void *nombre_fichero=argv[1]; //Nombre fichero
 		char *string=argv[2];         //Argumento
 		int reserva_inodo=atoi(argv[3]); //Offset inodo.
@@ -19,15 +20,15 @@ int main(int argc, char **argv) {
 		char buffer [longitud];
 		int OFFSETS[5]={0,5210,256000,30720000,71680000};
 		strcpy(buffer,string);
-		char strings[128];
-		struct STAT state;
+		char strings[128]; //cambiar por fprintf
+		struct STAT *state;//cambiado a puntero
 
 		if(bmount(nombre_fichero)==-1){
 			fprintf(stderr, "Error en escribir.c, nombre_fichero --> %d: %s\n", errno, strerror(errno));
-		}else{
+      return -1;
+		}
 
 			int resNinodo = reservar_inodo('f',6);
-
 
 			int j =mi_write_f(resNinodo,string,OFFSETS[0],longitud);
 			memset(buffer,0,longitud);
@@ -48,23 +49,13 @@ int main(int argc, char **argv) {
 
 
 			}
-		}
 
-		int bm;
-		bm=bumount();
-		if(bm==-1){
+		if(bumount()==-1){
 			fprintf(stderr, "Error en escribir.c --> %d: %s\n", errno, strerror(errno));
 			return -1;
-		} else {
+		}
 			return 0;
 		}
-
-
-
-	}else{
-	printf("Sintaxis: escribir <nombre_dispositivo> <$(cat fichero)> <diferentes_inodos>\nOffsets: 0, 5120, 256000, 30720000, 71680000");
-	}
-
 
 
 }
