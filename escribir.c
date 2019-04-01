@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
 	if(argc==4){
 		void *nombre_fichero=argv[1]; //Nombre fichero
-		char *string=argv[2];         //Lo que le pasamos
+		char *string=argv[2];         //Argumento
 		int reserva_inodo=atoi(argv[3]); //Offset inodo.
 		int longitud = strlen(string);//Ya que lo hacemos por parámetro
 		char buffer [longitud];
@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
 		struct STAT state;
 
 		if(bmount(nombre_fichero)==-1){
-			printf("Error de fichero");
+			fprintf(stderr, "Error en escribir.c, nombre_fichero --> %d: %s\n", errno, strerror(errno));
 		}else{
-			//printf("longitud texto:%d\n",longitud );
+
 			int resNinodo = reservar_inodo('f',6);
 
 
@@ -51,11 +51,11 @@ int main(int argc, char **argv) {
 
 			}
 		}
-// mi_truncar_f(1,0);
-		int u;
-		u=bumount();
-		if(u==-1){
-			printf("Error en el close del fitxer\n");
+
+		int bm;
+		bm=bumount();
+		if(bm==-1){
+			fprintf(stderr, "Error en escribir.c --> %d: %s\n", errno, strerror(errno));
 			return -1;
 		} else {
 			return 0;
