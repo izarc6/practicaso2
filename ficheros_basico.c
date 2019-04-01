@@ -53,17 +53,35 @@ int initMB() {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
-  for(size_t i = SB.posPrimerBloqueDatos; i <= SB.posUltimoBloqueDatos; i++) {
+  for(size_t i = SB.posPrimerBloqueMB; i <= SB.posUltimoBloqueMB; i++) {
     if (bwrite(i, buffer) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
     }
   }
+  
+  // Actualizamos mapa de bits
+  int bloquesLibres = SB.cantBloquesLibres;
+  escribir_bit(posSB,1);
+  bloquesLibres--;
+  
+  for (int i=SB.posPrimerBloqueMB; i<=SB.posUltimoBloqueMB; i++) {
+    escribir_bit(i,1);
+    bloquesLibres--;
+  }
+  for (int i=SB.posPrimerBloqueAI; i<=SB.posUltimoBloqueAI; i++) {
+    escribir_bit(i,1);
+    bloquesLibres--;
+  }
+
+  SB.cantBloquesLibres = bloquesLibres;
+  
   // Actualizamos el superbloque
   if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c initMB() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
+  
   return 0;
 }
 
@@ -119,8 +137,9 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
   unsigned int nbloqueabs = nbloqueMB + SB.posPrimerBloqueMB;
 
   posbyte = posbyte % BLOCKSIZE;
-  unsigned char bufferMB[posbyte];
-  memset(bufferMB,'\0',posbyte);
+  unsigned char bufferMB[BLOCKSIZE];
+  memset(bufferMB,'\0',BLOCKSIZE);
+  bread(nbloqueabs,&bufferMB);
   mascara >>= posbit; // desplazamiento de bits a la derecha
   if (bit == 1) {
     bufferMB[posbyte] |= mascara; // operador OR para bits
@@ -185,21 +204,27 @@ int reservar_bloque() {
 
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
   bread(posBloqueMB,bufferMB);
-  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) != 0) {
+  
+  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0 && posBloqueMB <= SB.posUltimoBloqueMB) {
+      //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
+      printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
       posBloqueMB++;
       bread(posBloqueMB,bufferMB);
   }
 
-  unsigned int posbyte = posBloqueMB / 8;   // COMPROBAR SI ESTA BIEN
+  unsigned int posbyte = 0;
 
   // Comparamos bytes individuales del buffer con bufferAUX
-  while(memcmp(bufferMB, bufferAUX, 1)!=0) {
+  while(memcmp(bufferMB, bufferAUX, 1) != 0) {
+      printf("%d ",posbyte);
+      (*bufferMB)++;
       posbyte++;
   }
 
   // Ahora que tenemos el byte que contiene un 0, buscamos el bit que està a 0
   unsigned char mascara = 128; // 10000000
   int posbit = 0;
+  
   while (bufferMB[posbyte] & mascara) {
       posbit++;
       bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
@@ -207,10 +232,10 @@ int reservar_bloque() {
 
   // Ahora posbit contiene el bit = 0
 
-  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)*BLOCKSIZE + posbyte) * 8 + posbit;
+  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)* BLOCKSIZE + posbyte) * 8 + posbit;
   escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
 
-  SB.cantBloquesLibres--;     // Actualizamos cantidad de bloques libres en el SB
+  SB.cantBloquesLibres = SB.cantBloquesLibres - 1;     // Actualizamos cantidad de bloques libres en el SB
   // Guardamos el SB
   if (bwrite(posSB, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
@@ -240,7 +265,7 @@ int liberar_bloque(unsigned int nbloque) {
       return -1;
   }
   // Sumamos una unidad a la cantidad de bloques libres
-  SB.cantBloquesLibres++;
+  SB.cantBloquesLibres = SB.cantBloquesLibres + 1;
   // Guardamos el SB
   if (bwrite(0, &SB) == -1) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloque() --> %d: %s\n", errno, strerror(errno));

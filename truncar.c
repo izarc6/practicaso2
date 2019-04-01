@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #include <stdio.h>
 #include <string.h>
 #include "ficheros.h"
@@ -36,3 +37,11 @@ int main(int argc, char **argv) {
 
 
 }
+=======
+#include "ficheros.h"
+
+int main (int argc, char **argv) {
+    //TODO
+    return 0;
+}
+>>>>>>> 5da354dddca143b802e1b35f092dc8afc94b15d6

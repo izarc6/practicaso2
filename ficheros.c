@@ -1,4 +1,4 @@
-#include "ficheros_basico.h"
+#include "ficheros.h"
 
 //////////////////NIVEL 6//////////////////
 // Escribe el contenido de un buffer de memoria en un fichero/directorio
@@ -81,7 +81,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
       inodo.ctime = time(NULL);
     }
     inodo.mtime = time(NULL);
-    if (escribir_inodo(inodo, ninodo) == -1) {
+    if (escribir_inodo(ninodo, inodo) == -1) {
       fprintf(stderr, "Error en ficheros.c mi_write_f() --> %d: %s\n", errno, strerror(errno));
       return -1;
     }
@@ -173,7 +173,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
       leidos = leidos + desp2 + 1;
     }
     inodo.atime = time(NULL);
-    if (escribir_inodo(inodo, ninodo) == -1) {
+    if (escribir_inodo(ninodo, inodo) == -1) {
       fprintf(stderr, "Error en ficheros.c mi_write_f() --> %d: %s\n", errno, strerror(errno));
       return -1;
     }
@@ -210,7 +210,7 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
   inodo.permisos = permisos;
   // Actualizamos ctime
   inodo.ctime  = time(NULL);
-  escribir_inodo(inodo, ninodo);
+  escribir_inodo(ninodo, inodo);
   return 0;
 }
 
@@ -240,7 +240,7 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) {
     inodo.mtime = time(NULL);
     inodo.ctime  = time(NULL);
     inodo.tamEnBytesLog = nbytes;
-    escribir_inodo(inodo, ninodo);
+    escribir_inodo(ninodo, inodo);
     return bLiberados;
   }
   fprintf(stderr, "Error en ficheros.c mi_truncar_f() --> %d: %s\n", errno, strerror(errno));

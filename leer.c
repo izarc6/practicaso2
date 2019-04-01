@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //Le pasaremos por línea de comandos un nº de inodo obtenido con el programa
 //anterior (además del nombre del dispositivo). Su funcionamiento tiene que ser
 // similar a la función cat de linux, explorando TODO el fichero
@@ -26,3 +27,11 @@ int main(int argc, char **argv) {
 
     bumount();
 }
+=======
+#include "ficheros.h"
+
+int main (int argc, char **argv) {
+    //TODO
+    return 0;
+}
+>>>>>>> 5da354dddca143b802e1b35f092dc8afc94b15d6
