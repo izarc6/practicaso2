@@ -1,60 +1,27 @@
-///////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////PERMITIR.C////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-#include "ficheros.h"
+//Validación de sintaxis
+//montar dispositivo
+//llamada a mi_chmod_f() con los argumentos recibidos, convertidos a entero
+//desmontar dispositivo
+
+#include "directorios.h"
 
 
 int main(int argc, char **argv) {
 	if (argc != 4) {
 		printf("Sintaxis: truncar <nombre_dispositivo> <ninodo> <permisos>\n");
 		return -1;
-	} else {
-		void *nombre_fichero = argv[1];
-		unsigned char permisos = *argv[2];
-		void *ruta = argv[3];
-		int bm = bmount(nombre_fichero);
-		if (bm == -1) {
-			printf("ERROR: APERTURA FICHERO INCORRECTA.\n");
-			return -1;
-		} else {
-			int error = mi_chmod_f(ruta, permisos);
-			if (error < 0) {
-				switch (error) {
-					case -1:
-						printf("ERROR: EXTRACCIÓN INCORECTA DEL CAMINO\n");
-						return -1;
-						break;
-					case -2:
-						printf("ERROR: NO EXISTE ENTRADA CONSULTA\n");
-						return -2;
-						break;
-					case -3:
-						printf("ERROR: NO EXISTE DIRECTORIO INTERMEDIO\n");
-						return -3;
-						break;
-					case -4:
-						printf("ERROR DE PERMISOS:NO PERMISOS DE ESCRITURA\n");
-						return -4;
-						break;
-					case -5:
-						printf("ERROR: LA ENTRADA YA EXISTE\n");
-						return -5;
-						break;
-					case -8:
-						printf("ERROR DE PERMISOS:NO PERMISOS DE LECTURA\n");
-						return -8;
-						break;
-				}
-			}
-			int bum;
-			bum = bumount();
-			if (bum == -1) {
-				printf("ERROR: CIERRE FICHERO INCORRECTO.\n");
-				return -1;
-			} else {
-				return 0;
-			}
-		}
 	}
-}
 
+	  unsigned int ninodo = atoi(argv[2]);
+		unsigned char permisos = argv[3];
+
+		if (bmount(argv[1]) == -1) {
+      fprintf(stderr, "Error en permitir.c --> %d: %s\nFallo en bmount", errno, strerror(errno));
+      return -1;
+		}
+			mi_chmod_f(ninodo, permisos);
+
+		   bumount();
+
+	return 0;
+}
