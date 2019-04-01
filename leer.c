@@ -1,11 +1,19 @@
 //Le pasaremos por línea de comandos un nº de inodo obtenido con el programa
 //anterior (además del nombre del dispositivo). Su funcionamiento tiene que ser
 // similar a la función cat de linux, explorando TODO el fichero
-#include "bloques.h"
-#include "directorios.h"
+
 
 int main(int argc, char **argv) {
-    bmount(argv[1]);
+  //errores generales
+  if (argc != 4) {
+		printf("Sintaxis: leer <nombre_dispositivo> <$(cat fichero)> <diferentes_inodos>\n");
+		return -1;
+	}
+  //control de bmount
+  if (bmount(argv[1]) == -1) {
+    fprintf(stderr, "Error en leer.c --> %d: %s\nFallo en bmount", errno, strerror(errno));
+    return -1;
+  }
     int ninodo = atoi(argv[2]);
     unsigned char buffer[BLOCKSIZE];
     memset(buffer, 0, BLOCKSIZE);
@@ -22,9 +30,8 @@ int main(int argc, char **argv) {
     printf("\n");
 
     if (lectura == -1) {
-        fprintf(stderr, "Error en leer.c nombre fichero --> %d: %s\n", errno, strerror(errno));
+        fprintf(stderr, "Error en leer.c --> %d: %s\n", errno, strerror(errno));
     }
 
     bumount();
 }
-
