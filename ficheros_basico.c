@@ -499,7 +499,7 @@ int liberar_inodo(unsigned int ninodo) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
-	escribir_inodo(ninodo, inodo);
+	escribir_inodo(inodo.punterosDirectos[0], inodo); // PUEDE QUE ESTE MAL
   
 	return ninodo;
 }
