@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     bread(posSB,&SB);
     printf("\nDEBUG - posPrimerInodoLibre (después de la reserva): %d\n\n",SB.posPrimerInodoLibre);
 
-    printf("TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 16.843.019\n");
+    printf("\nTRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 16.843.019\n");
     printf("Traducciòn bloque lògico n.8: %d\n",traducir_bloque_inodo(1,8,'0'));
     printf("Traducciòn bloque lògico n.204: %d\n",traducir_bloque_inodo(1,204,'0'));
     printf("Traducciòn bloque lògico n.30.004: %d\n",traducir_bloque_inodo(1,30004,'0'));
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
     printf("Tamaño en bytes lógicos: %d\n", inodo.tamEnBytesLog);
     printf("N. de bloques ocupados: %d\n", inodo.numBloquesOcupados);
 
-    printf("LIBERAMOS EL INODO RESERVADO EN EL NIVEL ANTERIOR Y TODOS SUS BLOQUES\n");
+    printf("\nLIBERAMOS EL INODO RESERVADO EN EL NIVEL ANTERIOR Y TODOS SUS BLOQUES\n");
     printf("Hemos liberado el inodo nº: %d\n",liberar_inodo(inodoReservado));
     bread(posSB,&SB);
     printf("\nAhora el primer inodo libre es el --> posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);

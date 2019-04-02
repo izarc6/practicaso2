@@ -482,47 +482,60 @@ int liberar_inodo(unsigned int ninodo) {
   }
   // A la cantidad de bloques ocupados del inodo se le restará
   // la cantidad de bloques liberados por esta función y debería ser 0
-  printf("SB.cantBloquesLibres es: %d\n", SB.cantBloquesLibres);
+  printf("NumBlOcupados es: %d\n",inodo.numBloquesOcupados);
   printf("bLiberados es: %d\n", bLiberados);
-  if (SB.cantBloquesLibres - bLiberados == 0) {  //TODO HERE
+  if (inodo.numBloquesOcupados - bLiberados == 0) {  //TODO HERE
     printf("Entramos en el if de liberar_inodo\n");
     // Marcar el inodo como tipo libre
     inodo.tipo = 'l';
   } else {
-    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
+    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo()\n El nùmero de bloques ocupados por el inodo liberado y los bloques liberados no son los mismos! Error --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
   inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
 	SB.posPrimerInodoLibre = ninodo;
-  SB.cantInodosLibres++;
-	escribir_inodo(ninodo, inodo);
+  SB.cantInodosLibres = SB.cantBloquesLibres + 1;
   if (bwrite(posSB, &SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
+	escribir_inodo(ninodo, inodo);
+  
 	return ninodo;
 }
 
 int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   // Variables
   struct inodo inodo;
-  unsigned int  nRangoBL, nivel_punteros, indice, ptr, nblog, ultimoBL;
+  unsigned int  nRangoBL, nivel_punteros, indice, ptr, nblog, ultimoBL, tamInodo;
   int bloques_punteros[3][NPUNTEROS];
   int indices[3];
   int ptr_nivel[3];
-  int liberados;
+  int liberados, salvar_inodo;
 
   //Procedimiento
-  liberados = 0;
+  liberados = 0; salvar_inodo = 0;
   leer_inodo(ninodo, &inodo);
-  if (inodo.tamEnBytesLog % BLOCKSIZE == 0) {
-    ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE - 1;
-  } else {
-    ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE;
+  tamInodo = inodo.tamEnBytesLog;
+  printf("DEBUG - lib-bl-in - tamenbyteslog del inodo %d: %d\n",ninodo, tamInodo);
+  tamInodo = INDIRECTOS2-1;
+  printf("DEBUG - Forzamos tamInodo a INDIRECTOS2-1\n**Nuevo tamInodo: %d\n",tamInodo);
+
+  if (tamInodo == 0) {
+    return 0; // Fichero vacìo
   }
+  // Obtenemos el ùltimo bloque lògico del inodo
+  if (tamInodo % BLOCKSIZE == 0) {
+    ultimoBL = tamInodo / BLOCKSIZE - 1;
+  } else {
+    ultimoBL = tamInodo / BLOCKSIZE;
+  }
+
   ptr = 0;
+  printf("DEBUG - lib-bl-in - ultimoBL: %d\n",ultimoBL);
   // Recorrido BLs
   for (nblog = nblogico; nblog <= ultimoBL; nblog++) {
+    //printf("DEBUG - lib_bloq_inodo - n bloque: %d\n",nblog);
     nRangoBL = obtener_nrangoBL(&inodo, nblog, &ptr);
     if (nRangoBL < 0) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloques_inodo() --> %d: %s\n", errno, strerror(errno));
@@ -539,9 +552,10 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
     }
     if (ptr > 0) {
       liberar_bloque(ptr);
+      printf("DEBUG: liberado bloque n.%d\n",ptr);
       liberados++;
       if (nRangoBL == 0) {
-        inodo.punterosDirectos[nblog] = 0;
+        inodo.punterosDirectos[nblog] = 0; salvar_inodo = 1;
       } else {
         while (nivel_punteros < nRangoBL) {
           indice = indices[nivel_punteros];
@@ -553,7 +567,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
             liberados++;
             nivel_punteros++;
             if (nivel_punteros == nRangoBL) {
-              inodo.punterosIndirectos[nRangoBL-1] = 0;
+              inodo.punterosIndirectos[nRangoBL-1] = 0; salvar_inodo = 1;
             }
           } else {
             // Escribimos en el dispositivo el bloque de punteros modificado
@@ -563,6 +577,9 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
         }
       }
     }
+  }
+  if (salvar_inodo == 1) {
+    escribir_inodo(ninodo, inodo);
   }
   return liberados;
 }
