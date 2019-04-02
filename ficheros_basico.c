@@ -320,7 +320,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
   // TODO: Verificar si esto está bien!!!
   struct inodo in;
   leer_inodo(posInodoReservado, &in);
-  
+
   // Actualización superbloque
   SB.posPrimerInodoLibre = in.punterosDirectos[0];
   SB.cantInodosLibres = SB.cantInodosLibres - 1;
@@ -482,7 +482,10 @@ int liberar_inodo(unsigned int ninodo) {
   }
   // A la cantidad de bloques ocupados del inodo se le restará
   // la cantidad de bloques liberados por esta función y debería ser 0
+  printf("SB.cantBloquesLibres es: %d\n", SB.cantBloquesLibres);
+  printf("bLiberados es: %d\n", bLiberados);
   if (SB.cantBloquesLibres - bLiberados == 0) {  //TODO HERE
+    printf("Entramos en el if de liberar_inodo\n");
     // Marcar el inodo como tipo libre
     inodo.tipo = 'l';
   } else {
@@ -512,9 +515,6 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   //Procedimiento
   liberados = 0;
   leer_inodo(ninodo, &inodo);
-  if (inodo.tamEnBytesLog == 0) {
-    return liberados;     // liberados vale 0 ahora mismo
-  }
   if (inodo.tamEnBytesLog % BLOCKSIZE == 0) {
     ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE - 1;
   } else {
@@ -522,7 +522,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   }
   ptr = 0;
   // Recorrido BLs
-  for (nblog = nblogico; nblog == ultimoBL; nblog++) {
+  for (nblog = nblogico; nblog <= ultimoBL; nblog++) {
     nRangoBL = obtener_nrangoBL(&inodo, nblog, &ptr);
     if (nRangoBL < 0) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloques_inodo() --> %d: %s\n", errno, strerror(errno));
