@@ -102,7 +102,8 @@ int main(int argc, char **argv) {
     strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
 
     printf("Tipo: %c\n", inodo.tipo);
-    printf("Permisos: %c\n", inodo.permisos);
+    int permisos = (int) inodo.permisos;
+    printf("Permisos: %d\n", permisos);
     printf("atime: %s\n", atime);
     printf("mtime: %s\n", mtime);
     printf("ctime: %s\n", ctime);
@@ -111,19 +112,51 @@ int main(int argc, char **argv) {
     printf("N. de bloques ocupados: %d\n", inodo.numBloquesOcupados);
 
     bread(posSB,&SB);
-    printf("DEBUG - posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);
+    printf("\nDEBUG - posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);
 
     printf("\nTest de las funciones de traducciòn de bloques inodos\nReservando... ");
-    printf("Se ha reservado el inodo n.%d\n",reservar_inodo('f',6));
+    int inodoReservado = reservar_inodo('f',6);
+    printf("Se ha reservado el inodo n.%d\n", inodoReservado);
 
     bread(posSB,&SB);
-    printf("DEBUG - posPrimerInodoLibre (después de la reserva): %d\n",SB.posPrimerInodoLibre);
+    printf("\nDEBUG - posPrimerInodoLibre (después de la reserva): %d\n\n",SB.posPrimerInodoLibre);
 
+    printf("TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 16.843.019\n");
     printf("Traducciòn bloque lògico n.8: %d\n",traducir_bloque_inodo(1,8,'0'));
     printf("Traducciòn bloque lògico n.204: %d\n",traducir_bloque_inodo(1,204,'0'));
     printf("Traducciòn bloque lògico n.30.004: %d\n",traducir_bloque_inodo(1,30004,'0'));
     printf("Traducciòn bloque lògico n.400.004: %d\n",traducir_bloque_inodo(1,400004,'0'));
     printf("Traducciòn bloque lògico n.16.843.019: %d\n",traducir_bloque_inodo(1,16843019,'0'));
+
+    // Lectura datos inodo leído
+    printf("\nLectura datos del inodo %d\n", inodoReservado);
+    ninodo = inodoReservado;
+
+    if (leer_inodo(ninodo,&inodo) == -1) {
+      fprintf(stderr, "Error en leer_sf.c %d: %s\nImposible leer el inodo", errno, strerror(errno));
+      return -1;
+    }
+    ts = localtime(&inodo.atime);
+    strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.mtime);
+    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.ctime);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+
+    printf("Tipo: %c\n", inodo.tipo);
+    permisos = (int) inodo.permisos;
+    printf("Permisos: %d\n", permisos);
+    printf("atime: %s\n", atime);
+    printf("mtime: %s\n", mtime);
+    printf("ctime: %s\n", ctime);
+    printf("N. links: %d\n", inodo.nlinks);
+    printf("Tamaño en bytes lógicos: %d\n", inodo.tamEnBytesLog);
+    printf("N. de bloques ocupados: %d\n", inodo.numBloquesOcupados);
+
+    printf("LIBERAMOS EL INODO RESERVADO EN EL NIVEL ANTERIOR Y TODOS SUS BLOQUES\n");
+    printf("Hemos liberado el inodo nº: %d\n",liberar_inodo(inodoReservado));
+    bread(posSB,&SB);
+    printf("\nAhora el primer inodo libre es el --> posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);
 
     bumount();
     printf("Fichero \"%s\" desmontado con éxito.\n",argv[1]);
