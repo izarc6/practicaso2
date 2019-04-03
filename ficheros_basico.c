@@ -38,6 +38,7 @@ int initSB (unsigned int nbloques, unsigned int ninodos) {
   SB.cantInodosLibres = ninodos;    //tocar nivel3
   SB.totBloques = nbloques;
   SB.totInodos = ninodos;
+  // PUEDE QUE NO HAGA FALTA PONERLE PADDING
   for(size_t i = 0; i < INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char); i++){
     SB.padding[i] = 0;
   }
@@ -398,7 +399,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   struct inodo inodo;
   unsigned int ptr, ptr_ant, salvar_inodo,nRangoBL, nivel_punteros,indice;
   int buffer[NPUNTEROS];
-  leer_inodo(ninodo, &inodo);
+  if (leer_inodo(ninodo, &inodo)==-1 ) return -1;
   ptr = 0, ptr_ant = 0, salvar_inodo = 0;
   nRangoBL = obtener_nrangoBL(&inodo, nblogico, &ptr); //ATENTOS AQUI //nRangoBL := obtener_nrangoBL(inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
   nivel_punteros = nRangoBL;//nivel_punteros = nRangoBL
@@ -476,7 +477,7 @@ int liberar_inodo(unsigned int ninodo) {
   int bLiberados = liberar_bloques_inodo(ninodo, 0);
   // Leer el inodo actualizado
   leer_inodo(ninodo, &inodo);
-  
+
   // A la cantidad de bloques ocupados del inodo se le restará
   // la cantidad de bloques liberados por esta función y debería ser 0
   printf("NumBlOcupados es: %d\n",inodo.numBloquesOcupados);
@@ -500,8 +501,8 @@ int liberar_inodo(unsigned int ninodo) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
-	escribir_inodo(inodo.punterosDirectos[0], inodo); // PUEDE QUE ESTE MAL
-  
+	escribir_inodo(ninodo, inodo); // PUEDE QUE ESTE MAL
+
 	return ninodo;
 }
 
