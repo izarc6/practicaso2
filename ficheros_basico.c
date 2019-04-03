@@ -476,10 +476,7 @@ int liberar_inodo(unsigned int ninodo) {
   int bLiberados = liberar_bloques_inodo(ninodo, 0);
   // Leer el inodo actualizado
   leer_inodo(ninodo, &inodo);
-  if (bread(0,&SB) == -1) {
-    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
-    return -1;
-  }
+  
   // A la cantidad de bloques ocupados del inodo se le restará
   // la cantidad de bloques liberados por esta función y debería ser 0
   printf("NumBlOcupados es: %d\n",inodo.numBloquesOcupados);
@@ -492,9 +489,13 @@ int liberar_inodo(unsigned int ninodo) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo()\n El nùmero de bloques ocupados por el inodo liberado y los bloques liberados no son los mismos! Error --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
+  if (bread(0,&SB) == -1) {
+    fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
+    return -1;
+  }
   inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
 	SB.posPrimerInodoLibre = ninodo;
-  SB.cantInodosLibres = SB.cantBloquesLibres + 1;
+  SB.cantInodosLibres = SB.cantInodosLibres + 1;
   if (bwrite(posSB, &SB) == -1) {
     fprintf(stderr, "Error en ficheros_basico.c liberar_inodo() --> %d: %s\n", errno, strerror(errno));
     return -1;
@@ -518,18 +519,19 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   leer_inodo(ninodo, &inodo);
   tamInodo = inodo.tamEnBytesLog;
   printf("DEBUG - lib-bl-in - tamenbyteslog del inodo %d: %d\n",ninodo, tamInodo);
-  tamInodo = INDIRECTOS2-1;
-  printf("DEBUG - Forzamos tamInodo a INDIRECTOS2-1\n**Nuevo tamInodo: %d\n",tamInodo);
 
-  if (tamInodo == 0) {
-    return 0; // Fichero vacìo
-  }
+  //if (tamInodo == 0) {
+  //  return 0; // Fichero vacìo
+  //}
   // Obtenemos el ùltimo bloque lògico del inodo
   if (tamInodo % BLOCKSIZE == 0) {
     ultimoBL = tamInodo / BLOCKSIZE - 1;
   } else {
     ultimoBL = tamInodo / BLOCKSIZE;
   }
+
+  ultimoBL = INDIRECTOS2 - 1;
+  printf("DEBUG - Forzamos ultimoBL a INDIRECTOS2-1\n**Nuevo ultimoBL: %d\n",ultimoBL);
 
   ptr = 0;
   printf("DEBUG - lib-bl-in - ultimoBL: %d\n",ultimoBL);
