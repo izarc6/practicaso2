@@ -500,6 +500,8 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   int indices[3];
   int ptr_nivel[3];
   int liberados, salvar_inodo;
+  unsigned char bufferAUX[BLOCKSIZE];
+  memset(bufferAUX, 0, BLOCKSIZE);
 
   //Procedimiento
   liberados = 0; salvar_inodo = 0;
@@ -550,7 +552,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
           indice = indices[nivel_punteros];
           bloques_punteros[nivel_punteros][indice] = 0;
           ptr = ptr_nivel [nivel_punteros];
-          if (bloques_punteros[nivel_punteros] == 0) {
+          if (memcmp (bloques_punteros[nivel_punteros], bufferAUX, BLOCKSIZE) == 0) {
             // No cuelgan bloques ocupados, hay que liberar el bloque de punteros
             liberar_bloque(ptr);
             liberados++;
