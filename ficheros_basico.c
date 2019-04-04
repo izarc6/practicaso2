@@ -188,69 +188,55 @@ int reservar_bloque() {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
       return -1;
   }
-
   // Si no hay bloques libres, acaba con -1
   if (SB.cantBloquesLibres == 0) {
       fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible reservar bloque, no quedan libres!", errno, strerror(errno));
       return -1;
   }
-
   unsigned int posBloqueMB = SB.posPrimerBloqueMB;
-
   unsigned char bufferMB[BLOCKSIZE];      // Buffer MB
   memset(bufferMB,'\0',BLOCKSIZE);
   unsigned char bufferAUX[BLOCKSIZE];   // Buffer auxiliario
   memset(bufferAUX,255,BLOCKSIZE);
-
+  int verificar = 1;
+  int bit = 0;
+  unsigned char mascara = 128;
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
-  bread(posBloqueMB,bufferMB);
-
-  while (memcmp(bufferMB,bufferAUX,BLOCKSIZE) == 0 && posBloqueMB <= SB.posUltimoBloqueMB) {
-      //printf("%d ",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
-      //printf("DEBUG MEMCMP: %d\n",memcmp(bufferMB,bufferAUX,BLOCKSIZE));
-      posBloqueMB++;
-      bread(posBloqueMB,bufferMB);
+  for(posBloqueMB; posBloqueMB <= SB.posUltimoBloqueMB && verificar > 0 && bit == 0; posBloqueMB++){
+    verificar = bread(posBloqueMB, bufferMB);
+    bit = memcmp(bufferMB,bufferAUX, BLOCKSIZE);
   }
-
-  unsigned int posbyte = 0;
-
-  // Comparamos bytes individuales del buffer con bufferAUX
-  while(memcmp(bufferMB, bufferAUX, 1) != 0) {
-      printf("%d ",posbyte);
-      (*bufferMB)++;
-      posbyte++;
+  posBloqueMB--;
+  if(verificar > 0){
+    for(int posbyte = 0; posbyte < BLOCKSIZE; posbyte++){
+     if(bufferMB[posbyte] < 255) {
+       int posbit = 0;
+       while (bufferMB[posbyte] & mascara) {
+           posbit++;
+           bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
+       }
+       // Ahora posbit contiene el bit = 0
+       int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)* BLOCKSIZE + posbyte) * 8 + posbit;
+       escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
+       SB.cantBloquesLibres = SB.cantBloquesLibres - 1;     // Actualizamos cantidad de bloques libres en el SB
+       // Guardamos el SB
+       if (bwrite(posSB, &SB) == -1) {
+           fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
+           return -1;
+       }
+       // Grabamos un buffer de 0s en la pos. nbloque
+       unsigned char bufferVacio[BLOCKSIZE];      // Buffer de ceros
+       memset(bufferVacio,'\0',BLOCKSIZE);
+       if (bwrite(nbloque, &bufferVacio) == -1) {
+           fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible escribir buffer vacio", errno, strerror(errno));
+           return -1;
+       }
+       return nbloque;
+     }
+    }
   }
-
-  // Ahora que tenemos el byte que contiene un 0, buscamos el bit que està a 0
-  unsigned char mascara = 128; // 10000000
-  int posbit = 0;
-
-  while (bufferMB[posbyte] & mascara) {
-      posbit++;
-      bufferMB[posbyte] <<= 1;  // Desplazamos bits a la izquierda
-  }
-
-  // Ahora posbit contiene el bit = 0
-
-  int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)* BLOCKSIZE + posbyte) * 8 + posbit;
-  escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
-
-  SB.cantBloquesLibres = SB.cantBloquesLibres - 1;     // Actualizamos cantidad de bloques libres en el SB
-  // Guardamos el SB
-  if (bwrite(posSB, &SB) == -1) {
-      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
-      return -1;
-  }
-
-  // Grabamos un buffer de 0s en la pos. nbloque
-  unsigned char bufferVacio[BLOCKSIZE];      // Buffer de ceros
-  memset(bufferVacio,'\0',BLOCKSIZE);
-  if (bwrite(nbloque, &bufferVacio) == -1) {
-      fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nImposible escribir buffer vacio", errno, strerror(errno));
-      return -1;
-  }
-
-  return nbloque;
+  fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\nNo es valido", errno, strerror(errno));
+  return -1;
 }
 
 int liberar_bloque(unsigned int nbloque) {

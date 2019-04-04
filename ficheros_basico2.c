@@ -163,50 +163,43 @@ Encuentra el primer bloque libre (ver cálculos para el mapa de bits),
 lo ocupa (con la ayuda de la función escribir_bit()) y devuelve su posición.
 */
 int reservar_bloque(){
-	struct superbloque sb;
-	int valido = 1;
-	int e = 0;
-	int numbloque, bloqueMB;
-	unsigned char buffer [BLOCKSIZE];
-	unsigned char bufferAux [BLOCKSIZE];
-	unsigned char mascara = 128;
-	memset(bufferAux, 255, BLOCKSIZE);
-	if(bread(posSB, &sb) == -1)return -1;
-	if(sb.cantBloquesLibres > 0){   //Comprobamos la variable del superbloque que nos indica si quedan bloques libres.
-		for(bloqueMB = sb.posPrimerBloqueMB; bloqueMB <= sb.posUltimoBloqueMB
-			&& e == 0 && valido > 0; bloqueMB++){
-			valido = bread(bloqueMB, buffer);
-		e = memcmp(buffer,bufferAux,BLOCKSIZE);
-	}
-	bloqueMB--;
-	if(valido > 0){
-		for(int posbyte = 0; posbyte < BLOCKSIZE; posbyte++){
-
-			if(buffer[posbyte] < 255){
-				int posbit = 0;
-				while(buffer[posbyte] & mascara){
-					posbit++;
-					buffer[posbyte] <<= 1;
-				}
-				numbloque = ((bloqueMB - sb.posPrimerBloqueMB) *
-					BLOCKSIZE + posbyte) * 8 + posbit;
-				escribir_bit(numbloque, 1);
-				sb.cantBloquesLibres--;
-				if(bwrite(posSB, &sb) == -1) return -1;
-				memset(bufferAux, 0, BLOCKSIZE);
-				if(bwrite(numbloque,bufferAux) == -1) return -1;
-				return numbloque;
-			}
-		}
-	} else return -1;
-
-
+  struct superbloque sb;
+  int valido = 1;
+  int e = 0;
+  int numbloque, bloqueMB;
+  unsigned char buffer [BLOCKSIZE];
+  unsigned char bufferAux [BLOCKSIZE];
+  unsigned char mascara = 128;
+  memset(bufferAux, 255, BLOCKSIZE);
+  if(bread(posSB, &sb) == -1)return -1;
+  if(sb.cantBloquesLibres > 0){   //Comprobamos la variable del superbloque que nos indica si quedan bloques libres.
+    for(bloqueMB = sb.posPrimerBloqueMB; bloqueMB <= sb.posUltimoBloqueMB && e == 0 && valido > 0; bloqueMB++){
+      valido = bread(bloqueMB, buffer);
+      e = memcmp(buffer,bufferAux,BLOCKSIZE);
+    }
+    bloqueMB--;
+    if(valido > 0){
+      for(int posbyte = 0; posbyte < BLOCKSIZE; posbyte++){
+       if(buffer[posbyte] < 255) {
+         int posbit = 0;
+         while(buffer[posbyte] & mascara){
+           posbit++;
+           buffer[posbyte] <<= 1;
+         }
+         numbloque = ((bloqueMB - sb.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+         escribir_bit(numbloque, 1);
+         sb.cantBloquesLibres--;
+         if(bwrite(posSB, &sb) == -1) return -1;
+         memset(bufferAux, 0, BLOCKSIZE);
+         if(bwrite(numbloque,bufferAux) == -1) return -1;
+         return numbloque;
+       }
+      }
+    } else return -1;
+  }
+  fprintf(stderr, "ERROR: No quedan bloques libres\n");
+  return -1;
 }
-fprintf(stderr, "ERROR: No quedan bloques libres\n");
-return -1;
-}
-
-
 
 /*
 Libera un bloque determinado (con la ayuda de la función escribir_bit()).
