@@ -13,8 +13,7 @@ int main(int argc, char **argv) {
 	}
 
 	unsigned int ninodo = atoi(argv[2]);
-	unsigned char permisos;
-	strncpy(permisos,argv[3],1);
+	unsigned char permisos = argv[3][0];
 
 	if (bmount(argv[1]) == -1) {
       fprintf(stderr, "Error en permitir.c --> %d: %s\nFallo en bmount", errno, strerror(errno));

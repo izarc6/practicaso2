@@ -194,19 +194,22 @@ int reservar_bloque() {
     return -1;
   }
   unsigned int posBloqueMB = SB.posPrimerBloqueMB;
-  unsigned char bufferMB[BLOCKSIZE];      // Buffer MB
+  unsigned char bufferMB[BLOCKSIZE];      // Buffer de lectura MB
   memset(bufferMB,'\0',BLOCKSIZE);
-  unsigned char bufferAUX[BLOCKSIZE];   // Buffer auxiliario
+  unsigned char bufferAUX[BLOCKSIZE];     // Buffer auxiliario (todos 1)
   memset(bufferAUX,255,BLOCKSIZE);
   int verificar = 1;
   int bit = 0;
   unsigned char mascara = 128;
+
   // Recorremos los bloques del MB hasta encontrar uno que esté a 0
-  for(posBloqueMB; posBloqueMB <= SB.posUltimoBloqueMB && verificar > 0 && bit == 0; posBloqueMB++){
+  for(; posBloqueMB <= SB.posUltimoBloqueMB && verificar > 0 && bit == 0; posBloqueMB++){
     verificar = bread(posBloqueMB, bufferMB);
     bit = memcmp(bufferMB,bufferAUX, BLOCKSIZE);
   }
+  // Una vez encontrado, vamos atràs de 1
   posBloqueMB--;
+
   if(verificar > 0){
     for(int posbyte = 0; posbyte < BLOCKSIZE; posbyte++){
       if(bufferMB[posbyte] < 255) {
@@ -217,8 +220,8 @@ int reservar_bloque() {
         }
         // Ahora posbit contiene el bit = 0
         int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB)* BLOCKSIZE + posbyte) * 8 + posbit;
-        escribir_bit(nbloque, 1);   // Marcamos el bloque como reservado
-        SB.cantBloquesLibres = SB.cantBloquesLibres - 1;     // Actualizamos cantidad de bloques libres en el SB
+        escribir_bit(nbloque, 1);                             // Marcamos el bloque como reservado
+        SB.cantBloquesLibres = SB.cantBloquesLibres - 1;      // Actualizamos cantidad de bloques libres en el SB
         // Guardamos el SB
         if (bwrite(posSB, &SB) == -1) {
           fprintf(stderr, "Error en ficheros_basico.c reservar_bloque() --> %d: %s\n", errno, strerror(errno));
@@ -511,6 +514,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   tamInodo = inodo.tamEnBytesLog;
   printf("DEBUG - lib-bl-in - tamenbyteslog del inodo %d: %d\n",ninodo, tamInodo);
 
+  // Disabilitar este if si se hacen pruebas con leer_sf
   if (tamInodo == 0) {
     printf("El fichero estaba vacío, return 0 en liberar_bloques_inodo()\n");
     return 0; // Fichero vacìo
@@ -522,6 +526,7 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
     ultimoBL = tamInodo / BLOCKSIZE;
   }
 
+  // CUIDADO - Usar solo cuando se hace testing con leer_sf, non con scripts!
   //ultimoBL = INDIRECTOS2 - 1;
   //printf("DEBUG - Forzamos ultimoBL a INDIRECTOS2-1\n**Nuevo ultimoBL: %d\n",ultimoBL);
 

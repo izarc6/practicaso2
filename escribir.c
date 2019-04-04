@@ -1,6 +1,5 @@
 #include "ficheros.h"
 
-
 /*
 Escribirá texto en uno o varios inodos haciendo uso de reservar_inodo ('f', 6)
 para obtener un nº de inodo,que mostraremos por pantalla y además utilizaremos
