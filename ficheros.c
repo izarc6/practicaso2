@@ -1,11 +1,12 @@
 #include "ficheros.h"
 
 //////////////////NIVEL 6//////////////////
+//Variable inodo global
+struct inodo inodo;
 // Escribe el contenido de un buffer de memoria en un fichero/directorio
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
   unsigned int primerBLogico, ultimoBLogico, desp1, desp2, bfisico;
   unsigned char buf_bloque[BLOCKSIZE];
-  struct inodo inodo;
   if (leer_inodo(ninodo, &inodo) < 0) {
     fprintf(stderr, "Error en ficheros.c mi_write_f() --> %d: %s\n", errno, strerror(errno));
     return -1;
@@ -70,11 +71,15 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         return -1;
       }
       desp2 = (offset + nbytes - 1) % BLOCKSIZE;
-      memcpy(buf_bloque, buf_original + (nbytes - desp2 - 1), desp2 + 1);
+      memcpy(buf_bloque, buf_original + nbytes - desp2 - 1, desp2 + 1);
       if (bwrite(bfisico, buf_bloque) == -1) {
         fprintf(stderr, "Error en ficheros.c mi_write_f() --> %d: %s\n", errno, strerror(errno));
         return -1;
       }
+    }
+    if (leer_inodo(ninodo, &inodo) < 0) {
+      fprintf(stderr, "Error en ficheros.c mi_write_f() --> %d: %s\n", errno, strerror(errno));
+      return -1;
     }
     if ((offset + nbytes) > inodo.tamEnBytesLog) {
       inodo.tamEnBytesLog = (offset + nbytes);
@@ -96,7 +101,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
   unsigned int primerBLogico, ultimoBLogico, desp1, desp2, bfisico;
   unsigned char buf_bloque[BLOCKSIZE];
-  struct inodo inodo;
   int leidos = 0;
   if (leer_inodo(ninodo, &inodo) < 0) {
     fprintf(stderr, "Error 1 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
@@ -191,7 +195,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 
 // Devuelve la metainformación de un fichero/directorio
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
-  struct inodo inodo;
   if (leer_inodo(ninodo, &inodo) < 0) {
     fprintf(stderr, "Error en ficheros.c mi_stat_f() --> %d: %s\n", errno, strerror(errno));
     return -1;
@@ -209,7 +212,6 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
 
 // Cambia los permisos de los inodos
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
-  struct inodo inodo;
   leer_inodo(ninodo, &inodo);
   // Cambiamos permisos
   inodo.permisos = permisos;
@@ -221,7 +223,6 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
 
 // Trunca un inodo en nbytes indicados como parámetro
 int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) {
-  struct inodo inodo;
   unsigned int nblogico;
   leer_inodo(ninodo, &inodo);
   // Miramos si tenemos permisos
