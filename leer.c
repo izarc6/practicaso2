@@ -6,8 +6,8 @@
 
 int main(int argc, char **argv) {
   //errores generales
-  if (argc != 4) {
-		printf("Sintaxis: leer <nombre_dispositivo> <$(cat fichero)> <diferentes_inodos>\n");
+  if (argc != 3) {
+		printf("Sintaxis: leer <nombre_dispositivo> <ninodo>\n");
 		return -1;
 	}
   //control de bmount
@@ -16,23 +16,30 @@ int main(int argc, char **argv) {
     return -1;
   }
     int ninodo = atoi(argv[2]);
+    int offset = 0;
+    int B_leidos = 0;
+    struct STAT stat;
     unsigned char buffer[BLOCKSIZE];
     memset(buffer, 0, BLOCKSIZE);
 
-    int i = 0;
-    int lectura = 0;
     printf("Leyendo archivo\n");
-
-    while ((lectura = mi_read_f(ninodo, buffer, i * BLOCKSIZE, BLOCKSIZE)) > 0) {
-        printf("%s", buffer);
-        memset(buffer,0,BLOCKSIZE);
-        i++;
+    int valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
+    while (valor > 0) {
+      for (size_t i = 0; i < valor; i++) {
+        printf("%c", buffer[i]);
+      }
+      B_leidos = B_leidos + valor;
+      offset = offset + BLOCKSIZE;
+      memset(buffer,0,BLOCKSIZE);
+      valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
     }
     printf("\n");
+    printf("Bytes leídos: %d\n", B_leidos);
+    mi_stat_f(ninodo, &stat);
+    printf("Tamaño en bytes lógicos: %d\n", stat.tamEnBytesLog);
 
-    if (lectura == -1) {
+    if (bumount() == -1) {
         fprintf(stderr, "Error en leer.c --> %d: %s\n", errno, strerror(errno));
     }
 
-    bumount();
 }

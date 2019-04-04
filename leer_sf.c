@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    printf("Datos del Superbloque:\n");
+    printf("\nDatos del Superbloque:\n");
     printf("\tposPrimerBloqueMB = %d\n", SB.posPrimerBloqueMB);
     printf("\tposUltimoBloqueMB = %d\n", SB.posUltimoBloqueMB);
     printf("\tposPrimerBloqueAI = %d\n", SB.posPrimerBloqueAI);
@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
     printf("\tcantBloquesLibres = %d\n", SB.cantBloquesLibres);
     printf("\tcantInodosLibres = %d\n", SB.cantInodosLibres);
     printf("\ttotBloques = %d\n", SB.totBloques);
-    printf("\ttotInodos = %d\n", SB.totInodos);
-
+    printf("\ttotInodos = %d\n\n", SB.totInodos);
+/*
     printf("sizeof struct superbloque: %lu\n", sizeof(struct superbloque));
     printf("sizeof struct inodo: %lu\n", sizeof(struct inodo));
 
@@ -157,8 +157,8 @@ int main(int argc, char **argv) {
     printf("Hemos liberado el inodo nº: %d\n",liberar_inodo(inodoReservado));
     bread(posSB,&SB);
     printf("\nAhora el primer inodo libre es el --> posPrimerInodoLibre: %d\n",SB.posPrimerInodoLibre);
-
+*/
     bumount();
-    printf("Fichero \"%s\" desmontado con éxito.\n",argv[1]);
+    //printf("Fichero \"%s\" desmontado con éxito.\n",argv[1]);
     return 0;
 }
