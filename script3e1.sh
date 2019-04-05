@@ -57,3 +57,4 @@ echo "#intentamos leer inodo 1 con permisos=0"
 echo "################################################################################"
 echo "$ ./truncar disco 1 50"
 echo "#intentamos truncar inodo 1 con permisos=0"
+./truncar disco 1 50

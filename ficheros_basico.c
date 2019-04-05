@@ -274,7 +274,6 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     return -1;
   }
   unsigned int posInodo = SB.posPrimerBloqueAI + ((ninodo * INODOSIZE) / BLOCKSIZE);
-  //printf("DEBUG - escribir_inodo - posInodo: %d\n",posInodo);
   struct inodo inodos[BLOCKSIZE/INODOSIZE];
   bread(posInodo, inodos); // Leemos el bloque del inodo
   memcpy(&inodos[ninodo%(BLOCKSIZE/INODOSIZE)],&inodo, INODOSIZE);
@@ -402,7 +401,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   while (nivel_punteros>0) {
     if (ptr==0) {
       if (reservar == 0) {
-        fprintf(stderr, "Error en ficheros_basico.c traducir_bloque_inodo--> reservar = 0\n");
+        //fprintf(stderr, "Error en ficheros_basico.c traducir_bloque_inodo--> reservar = 0\n");
         return -1;
       }else{
         salvar_inodo =1;
@@ -438,7 +437,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
   } //al salir de este bucle ya estamos al nivel de datos
   if (ptr == 0) {
     if (reservar == 0){
-      fprintf(stderr, "Error en ficheros_basico.c traducir_bloque_inodo--> reservar = 0 (error de lectura bloque)\n");
+      //fprintf(stderr, "Error en ficheros_basico.c traducir_bloque_inodo--> reservar = 0 (error de lectura bloque)\n");
       return -1;//error lectura ∄ bloque
     } else {
       salvar_inodo = 1;
@@ -521,8 +520,6 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   liberados = 0; salvar_inodo = 0;
   leer_inodo(ninodo, &inodo);
   tamInodo = inodo.tamEnBytesLog;
-  printf("DEBUG - lib-bl-in - tamenbyteslog del inodo %d: %d\n",ninodo, tamInodo);
-
   // Disabilitar este if si se hacen pruebas con leer_sf
   if (tamInodo == 0) {
     printf("El fichero estaba vacío, return 0 en liberar_bloques_inodo()\n");
@@ -534,16 +531,9 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
   } else {
     ultimoBL = tamInodo / BLOCKSIZE;
   }
-
-  // CUIDADO - Usar solo cuando se hace testing con leer_sf, non con scripts!
-  //ultimoBL = INDIRECTOS2 - 1;
-  //printf("DEBUG - Forzamos ultimoBL a INDIRECTOS2-1\n**Nuevo ultimoBL: %d\n",ultimoBL);
-
   ptr = 0;
-  printf("DEBUG - lib-bl-in - ultimoBL: %d\n",ultimoBL);
   // Recorrido BLs
   for (nblog = nblogico; nblog <= ultimoBL; nblog++) {
-    //printf("DEBUG - lib_bloq_inodo - n bloque: %d\n",nblog);
     nRangoBL = obtener_nrangoBL(&inodo, nblog, &ptr);
     if (nRangoBL < 0) {
       fprintf(stderr, "Error en ficheros_basico.c liberar_bloques_inodo() --> %d: %s\n", errno, strerror(errno));
@@ -560,7 +550,6 @@ int liberar_bloques_inodo(unsigned int ninodo, unsigned int nblogico) {
     }
     if (ptr > 0) {
       liberar_bloque(ptr);
-      printf("DEBUG: liberado bloque n.%d\n",ptr);
       liberados++;
       if (nRangoBL == 0) {
         inodo.punterosDirectos[nblog] = 0; salvar_inodo = 1;

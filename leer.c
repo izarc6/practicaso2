@@ -18,20 +18,19 @@ int main(int argc, char **argv) {
     int ninodo = atoi(argv[2]);
     int offset = 0;
     int B_leidos = 0;
+    int valor = 0;
     struct STAT stat;
     unsigned char buffer[BLOCKSIZE];
     memset(buffer, 0, BLOCKSIZE);
 
-    printf("Leyendo archivo\n");
-    int valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
-    while (valor > 0) {
+    //printf("Leyendo archivo\n");
+    while ((valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE)) > 0) {
       for (size_t i = 0; i < valor; i++) {
         printf("%c", buffer[i]);
       }
       B_leidos = B_leidos + valor;
       offset = offset + BLOCKSIZE;
       memset(buffer,0,BLOCKSIZE);
-      valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
     }
     printf("\n");
     printf("Bytes leídos: %d\n", B_leidos);

@@ -99,16 +99,11 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 
 // Lee información de un fichero/directorio y la almacena en un buffer de memoria
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
-  unsigned int primerBLogico, ultimoBLogico, desp1, desp2, bfisico;
+  unsigned int primerBLogico, ultimoBLogico, desp1, desp2, bfisico, reservar;
   unsigned char buf_bloque[BLOCKSIZE];
   int leidos = 0;
   if (leer_inodo(ninodo, &inodo) < 0) {
-    fprintf(stderr, "Error 1 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-    return -1;
-  }
-  inodo.atime = time(NULL);
-  if (escribir_inodo(ninodo, inodo) < 0) {
-    fprintf(stderr, "Error 2 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
+    fprintf(stderr, "Error en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
     return -1;
   }
   if ((inodo.permisos & 4) == 4) {
@@ -124,62 +119,52 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     primerBLogico = offset/BLOCKSIZE;
     // Último bloque lógico donde hay que escribir
     ultimoBLogico = (offset+nbytes-1)/BLOCKSIZE;
+    desp1 = offset % BLOCKSIZE;
+    desp2=(offset+nbytes-1)%BLOCKSIZE;
+    reservar = 0;
     // Primeramente trataremos el caso en que el primer y último bloque coincidan
     if (primerBLogico == ultimoBLogico) {
-      desp1 = offset % BLOCKSIZE;
-      bfisico = traducir_bloque_inodo(ninodo, primerBLogico, 1);
-      if (bfisico == -1) {
-        fprintf(stderr, "Error 3 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
+      bfisico = traducir_bloque_inodo(ninodo, primerBLogico, reservar);
+      if (bfisico != -1) {
+        if (bread(bfisico, buf_bloque) == -1) {
+          fprintf(stderr, "Error en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
+          return -1;
+        }
+        memcpy(buf_original, buf_bloque + desp1, nbytes);
       }
-      if (bread(bfisico, buf_bloque) == -1) {
-        fprintf(stderr, "Error 4 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
-      }
-      memcpy(buf_original, buf_bloque + desp1, nbytes);
-      leidos = leidos + nbytes;
+      leidos = nbytes;
     } else {
       // Distingamos tres fases:
       // Primer bloque
-      bfisico = traducir_bloque_inodo(ninodo, primerBLogico, 1);
-      if (bfisico == -1) {
-        fprintf(stderr, "Error 5 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
+      bfisico = traducir_bloque_inodo(ninodo, primerBLogico, reservar);
+      if (bfisico != -1) {
+        if (bread(bfisico, buf_bloque) == -1) {
+          fprintf(stderr, "Error en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
+          return -1;
+        }
+        memcpy(buf_original,buf_bloque + desp1, BLOCKSIZE - desp1);
       }
-      if (bread(bfisico, buf_bloque) == -1) {
-        fprintf(stderr, "Error 6 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
-      }
-      desp1 = offset % BLOCKSIZE;
-      memcpy(buf_original, buf_bloque + desp1, BLOCKSIZE - desp1);
-      leidos = leidos + BLOCKSIZE - desp1;
+      leidos = BLOCKSIZE - desp1;
       // Bloques intermedios
       for (int i = primerBLogico + 1; i < ultimoBLogico; i++){
-        bfisico = traducir_bloque_inodo(ninodo, i, 1);
-        if (bfisico == -1) {
-          fprintf(stderr, "Error 7 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-          return -1;
-        }
-        if (bread(bfisico, buf_bloque) == -1) {
-          fprintf(stderr, "Error 8 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-          return -1;
-        }
-        memcpy(buf_original + (BLOCKSIZE - desp1) + (i - primerBLogico - 1) * BLOCKSIZE, buf_bloque , BLOCKSIZE);
+        bfisico = traducir_bloque_inodo(ninodo, i, 0);
+        if(bfisico != -1){
+					bread(bfisico, buf_bloque);
+					memcpy(buf_original + (BLOCKSIZE - desp1) + (i - primerBLogico - 1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
+				}
         leidos = leidos + BLOCKSIZE;
       }
       // Último bloque
-      bfisico = traducir_bloque_inodo(ninodo, ultimoBLogico, 0);
-      if (bfisico == -1) {
-        fprintf(stderr, "Error 9 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
-      }
-      if (bread(bfisico, buf_bloque) == -1) {
-        fprintf(stderr, "Error 10 en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
-        return -1;
-      }
-      desp2 = (offset + nbytes - 1) % BLOCKSIZE;
-      memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque, desp2 + 1);
-      leidos = leidos + desp2 + 1;
+      bfisico = traducir_bloque_inodo(ninodo, ultimoBLogico, reservar);
+      if(bfisico != -1){
+				bread(bfisico, buf_bloque);
+				memcpy(buf_original + (BLOCKSIZE - desp1) + (ultimoBLogico - primerBLogico - 1)*BLOCKSIZE, buf_bloque,desp2 + 1);
+			}
+			leidos = leidos + desp2 + 1;
+    }
+    if (leer_inodo(ninodo, &inodo) < 0) {
+      fprintf(stderr, "Error en ficheros.c mi_read_f() --> %d: %s\n", errno, strerror(errno));
+      return -1;
     }
     inodo.atime = time(NULL);
     if (escribir_inodo(ninodo, inodo) == -1) {
@@ -227,7 +212,7 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) {
   leer_inodo(ninodo, &inodo);
   // Miramos si tenemos permisos
   if ((inodo.permisos & 2) != 2) {
-    fprintf(stderr, "Error en ficheros.c mi_truncar_f() --> %d: %s\n", errno, strerror(errno));
+    fprintf(stderr, "Error en ficheros.c mi_truncar_f() --> Permisos denegados de escritura\n");
     return -1;
   } else {
     if (inodo.tamEnBytesLog <= nbytes) {
