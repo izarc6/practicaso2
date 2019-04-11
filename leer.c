@@ -5,6 +5,8 @@
 
 
 int main(int argc, char **argv) {
+
+  int tam_lectura = 1500;
   //errores generales
   if (argc != 3) {
 		printf("Sintaxis: leer <nombre_dispositivo> <ninodo>\n");
@@ -20,17 +22,17 @@ int main(int argc, char **argv) {
     int B_leidos = 0;
     int valor = 0;
     struct STAT stat;
-    unsigned char buffer[BLOCKSIZE];
-    memset(buffer, 0, BLOCKSIZE);
+    unsigned char buffer[tam_lectura];
+    memset(buffer, 0, tam_lectura);
 
     //printf("Leyendo archivo\n");
-    while ((valor = mi_read_f(ninodo, buffer, offset, BLOCKSIZE)) > 0) {
+    while ((valor = mi_read_f(ninodo, buffer, offset, tam_lectura)) > 0) {
       for (size_t i = 0; i < valor; i++) {
         printf("%c", buffer[i]);
       }
       B_leidos = B_leidos + valor;
-      offset = offset + BLOCKSIZE;
-      memset(buffer,0,BLOCKSIZE);
+      offset = offset + tam_lectura;
+      memset(buffer,0,tam_lectura);
     }
     printf("\n");
     printf("Bytes leídos: %d\n", B_leidos);
