@@ -1,4 +1,7 @@
 //////////////////Includes//////////////////
+#include "ficheros.h"
+#include "ficheros_basico.h"
+
 
 //////////////////Defines//////////////////
 struct entrada {
