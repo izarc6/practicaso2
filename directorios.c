@@ -42,7 +42,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 
       }
 
-
       struct inodo inodo_dir;
       if (leer_inodo(*p_inodo_dir,inodo,&inodo_dir)==-1) {
         fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
