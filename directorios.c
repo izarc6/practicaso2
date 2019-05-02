@@ -28,6 +28,41 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
 
+      if (strcmp(camino_parcial,"/")) {
+        *p_inodo:=0;  //la raiz siempre estara asociada al inodo 0
+        *p_entrada:=0;
+        fprintf(stderr, "ERROR:Entrada es directorio raiz\n",errno, strerror(errno));
+        return 0;
+      }
+       c_tipo = extraer_camino(camino_parcial, c_inicial, c_final, &c_tipo);
+
+      if (c_tipo==-1) {
+        fprintf(stderr, "ERROR_EXTRAER_CAMINO\n",errno, strerror(errno));
+        return -1;
+
+      }
+
+
+      struct inodo inodo_dir;
+      if (leer_inodo(*p_inodo_dir,inodo,&inodo_dir)==-1) {
+        fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
+        return -1;
+      }
+      if ((inodo_dir.permisos & 4) == 4)  // Si tenim els permisos de lectura
+        fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
+        return -1;
+      }
+
+      struct entradas entradas[max_entradas];
+      unsigned int numentradas = inodo_dir.tamEnBytesLog / sizeof(struct entrada);
+      unsigned int nentrada = 0, offset = 0, buffSize = max_entradas * sizeof(struct entrada);
+      if (numentradas > 0) {
+        int res = mi_read_f(*p_inodo_dir, entradas, offset, buffSize);
+        while ((res > 0) && (nentrada < numentradas) && !strcmp(c_inicial, entradas[nentrada].nombre)) {
+            nentrada++;
+            offset += buffSize;
+            res = mi_read_f(*p_inodo_dir, entradas, offset, buffSize);
+        }
 }
 
 //////////////////NIVEL 9//////////////////
