@@ -1,7 +1,7 @@
 //////////////////Includes//////////////////
 #include <limits.h>   //Include para utilizar UINT_MAX (valor máximo del unsigned)
 #include "bloques.h"
-//#include "directorios.h"
+#include "directorios.h"
 
 //////////////////Defines//////////////////
 #define INODOSIZE 128 // Tamaño del inodo

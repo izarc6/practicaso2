@@ -1,3 +1,4 @@
+#include "directorios.h"
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
 
