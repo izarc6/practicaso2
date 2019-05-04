@@ -1,10 +1,10 @@
-//#include "directorios.h"
+#include "directorios.h"
 #include <string.h> // DEBUG
 #include <stdio.h>  // DEBUG
 #include <stdlib.h> // DEBUG
-#include "directorios.h"
 
 // DEBUG
+/*
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo);
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos);
 
@@ -12,25 +12,49 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 int main(int argc, char **argv) {
   extraer_camino("/uno/dos/tres/cuatro",NULL,NULL,NULL);
 }
+*/
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
-  char cam[40];
-  char **resultado = malloc(30*sizeof(cam));
-  strcpy(cam,camino);
-  char *test = strtok(cam,"/");
-  while (test != NULL) {
-    printf("%s\n",test);
-    *resultado = test;
-    resultado++;
-    test = strtok(NULL,"/");
+  char tipo;
+  unsigned int lengthC = strlen(camino + 1), lengthF;
+
+  if (camino[0] != '/' || camino == NULL) {
+      fprintf(stderr, "Error en directorios.c extraer_camino() --> Debe empezar con el símbolo /");
+      return -1;
   }
+
+  if (lengthC < 1 || lengthC > 60) {
+      fprintf(stderr, "Error en directorios.c extraer_camino() --> Path inválido\n");
+      return -1;
+  }
+
+  *final = strchr(camino + 1, '/');
+
+  if (final == NULL) {
+      tipo = 'f';
+      *final = "/";
+      lengthF = 0;
+  }
+  else {
+      tipo = 'd';
+      lengthF = strlen(final);
+  }
+
+  strncpy(inicial, camino + 1, lengthC - lengthF);
+  inicial[lengthC - lengthF] = '\0';
+  if (incial == NULL) {
+      fprintf(stderr, "Error en directorios.c extraer_camino() --> Inicial\n");
+      return -1;
+  }
+
+  return tipo;
 }
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
 
       if (strcmp(camino_parcial,"/")) {
-        *p_inodo:=0;  //la raiz siempre estara asociada al inodo 0
-        *p_entrada:=0;
+        *p_inodo := 0;  //la raiz siempre estara asociada al inodo 0
+        *p_entrada := 0;
         fprintf(stderr, "ERROR:Entrada es directorio raiz\n",errno, strerror(errno));
         return 0;
       }
@@ -39,7 +63,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
       if (c_tipo==-1) {
         fprintf(stderr, "ERROR_EXTRAER_CAMINO\n",errno, strerror(errno));
         return -1;
-
       }
 
       struct inodo inodo_dir;
@@ -47,6 +70,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
         return -1;
       }
+
       if ((inodo_dir.permisos & 4) == 4)  // Si tenim els permisos de lectura
         fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
         return -1;
@@ -145,7 +169,6 @@ int mi_dir(const char *camino, char *buffer){
             fprintf(stderr, "Error en directorios.c mi_dir()  --> No se ha podido leer la entrada %d\n", bufferDirectorio[i].ninodo);
             return -1;
         }
-        // toStrings
         *strPermisos = '\0';
         *strNinodo = '\0';
         strTipo[0] = inodoEntrada.tipo;
