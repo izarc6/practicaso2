@@ -15,39 +15,33 @@ int main(int argc, char **argv) {
 */
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
-  char tipo;
+  int tipoInt;
   unsigned int lengthC = strlen(camino + 1), lengthF;
-
   if (camino[0] != '/' || camino == NULL) {
       fprintf(stderr, "Error en directorios.c extraer_camino() --> Debe empezar con el símbolo /");
       return -1;
   }
-
   if (lengthC < 1 || lengthC > 60) {
       fprintf(stderr, "Error en directorios.c extraer_camino() --> Path inválido\n");
       return -1;
   }
-
-  *final = strchr(camino + 1, '/');
-
+  final = strchr(camino + 1, '/');
   if (final == NULL) {
-      tipo = 'f';
-      *final = "/";
+      tipoInt = 0; //Es Fichero
+      final = "/";
       lengthF = 0;
   }
   else {
-      tipo = 'd';
+      tipoInt = 1; //Es Directorio
       lengthF = strlen(final);
   }
-
   strncpy(inicial, camino + 1, lengthC - lengthF);
   inicial[lengthC - lengthF] = '\0';
-  if (incial == NULL) {
+  if (inicial == NULL) {
       fprintf(stderr, "Error en directorios.c extraer_camino() --> Inicial\n");
       return -1;
   }
-
-  return tipo;
+  return tipoInt; //Devuelve 0 si es Fichero o 1 si es Directorio
 }
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
@@ -229,18 +223,18 @@ int mi_stat(const char *camino, struct STAT *p_stat){
 
 //////////////////NIVEL 10/////////////////
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
-
+  return 0;
 }
 
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
-
+  return 0;
 }
 
 //////////////////NIVEL 11/////////////////
 int mi_link(const char *camino1, const char *camino2) {
-
+  return 0;
 }
 
 int mi_unlink(const char *camino) {
-
+  return 0;
 }
