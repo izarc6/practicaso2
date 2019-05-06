@@ -27,7 +27,7 @@ permitir: permitir.o
 
 truncar: truncar.o
 	$(CC) $(LDFLAGS) $(LIBRARIES) $@.o -o $@
-	
+
 directorios: directorios.o
 	$(CC) $(LDFLAGS) $(LIBRARIES) $@.o -o $@
 

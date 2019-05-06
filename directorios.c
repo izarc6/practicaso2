@@ -1,23 +1,9 @@
 #include "directorios.h"
-/*
-#include <string.h> // DEBUG
-#include <stdio.h>  // DEBUG
-#include <stdlib.h> // DEBUG
-
-// DEBUG
-int extraer_camino(const char *camino, char *inicial, char *final, char *tipo);
-int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos);
-
-// SOLO PARA PRUEBAS
-int main(int argc, char **argv) {
-extraer_camino("/uno/dos/tres/cuatro",NULL,NULL,NULL);
-}
-*/
 
 int c_tipo;
 char *c_inicial, *c_final;
 
-int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
+int extraer_camino(const char *camino, char *inicial, char *finale, char *tipo) {
   int tipoInt;
   unsigned int lengthC = strlen(camino + 1), lengthF;
   if (camino[0] != '/' || camino == NULL) {
@@ -28,15 +14,15 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
     fprintf(stderr, "Error en directorios.c extraer_camino() --> Path inválido\n");
     return -1;
   }
-  final = strchr(camino + 1, '/');
-  if (final == NULL) {
+  finale = strchr(camino + 1, '/');
+  if (finale == NULL) {
     tipoInt = 0; //Es Fichero
-    final = "/";
+    finale = "/";
     lengthF = 0;
   }
   else {
     tipoInt = 1; //Es Directorio
-    lengthF = strlen(final);
+    lengthF = strlen(finale);
   }
   strncpy(inicial, camino + 1, lengthC - lengthF);
   inicial[lengthC - lengthF] = '\0';
@@ -52,20 +38,20 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
   if (strcmp(camino_parcial,"/")) {
     *p_inodo = 0;  //la raiz siempre estara asociada al inodo 0
     *p_entrada = 0;
-    fprintf(stderr, "ERROR:Entrada es directorio raiz\n",errno, strerror(errno));
+    fprintf(stderr, "ERROR:Entrada es directorio raiz --> %d %s\n",errno, strerror(errno));
     return 0;
   }
   c_tipo = extraer_camino(camino_parcial, c_inicial, c_final, NULL);
   if (c_tipo == -1) {
-    fprintf(stderr, "ERROR_EXTRAER_CAMINO\n",errno, strerror(errno));
+    fprintf(stderr, "ERROR_EXTRAER_CAMINO\n --> %d %s",errno, strerror(errno));
     return -1;
   }
   if (leer_inodo(*p_inodo_dir, &inodo_dir)==-1) {
-    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
+    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n --> %d %s",errno, strerror(errno));
     return -1;
   }
   if ((inodo_dir.permisos & 4) == 4) {
-    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n",errno, strerror(errno));
+    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n --> %d %s",errno, strerror(errno));
     return -1;
   }
   struct entrada entradas[max_entradas];
