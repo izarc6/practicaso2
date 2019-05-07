@@ -3,7 +3,7 @@
 int c_tipo;
 char *c_inicial, *c_final;
 
-int extraer_camino(const char *camino, char *inicial, char *finale, char *tipo) {
+int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
   int tipoInt;
   unsigned int lengthC = strlen(camino + 1), lengthF;
   if (camino[0] != '/' || camino == NULL) {
@@ -14,15 +14,15 @@ int extraer_camino(const char *camino, char *inicial, char *finale, char *tipo) 
     fprintf(stderr, "Error en directorios.c extraer_camino() --> Path inválido\n");
     return -1;
   }
-  finale = strchr(camino + 1, '/');
-  if (finale == NULL) {
+  final = strchr(camino + 1, '/');
+  if (final == NULL) {
     tipoInt = 0; //Es Fichero
-    finale = "/";
+    final = "/";
     lengthF = 0;
   }
   else {
     tipoInt = 1; //Es Directorio
-    lengthF = strlen(finale);
+    lengthF = strlen(final);
   }
   strncpy(inicial, camino + 1, lengthC - lengthF);
   inicial[lengthC - lengthF] = '\0';
