@@ -1,5 +1,6 @@
 #include "directorios.h"
 
+// Imprime los detalles de un tipo STAT
 void printStat(struct STAT stat){
     printf("Tipo: %c\n",stat.tipo);
     printf("Permisos: %u\n",stat.permisos);
@@ -12,6 +13,7 @@ void printStat(struct STAT stat){
     printf("\n");
 }
 
+// Permite mostrar la informaciòn acerca del inodo de un fichero o de un directorio empleando mi_stat()
 int main(int argc, char const *argv[])
 {
     if (argc != 3)

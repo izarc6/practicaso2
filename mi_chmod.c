@@ -1,5 +1,6 @@
 #include "directorios.h"
 
+// Permite cambiar los permisos de un fichero o de un directorio empleando mi_chmod()
 int main(int argc, char const *argv[])
 {
     if (argc != 4)
@@ -9,7 +10,17 @@ int main(int argc, char const *argv[])
     }
 
     const char *camino = argv[3];
-    char permisos = atoi(argv[2]);
+    int permisos_check = atoi(argv[2]);
+    char permisos = ' ';
+
+    // Comprobaciòn del valor de los permisos
+    if (permisos_check >= 0 && permisos_check <= 7) {  // Si el valor de permisos està entre 0 y 7, se sigue con la ejecuciòn 
+        permisos = argv[2][0];
+    } else {
+        fprintf(stderr, "mi_chmod.c --> '%s' no es considerado un valor de permisos valido. Usar un valor entre 0 y 7.\n",argv[2]);
+        return -1;
+    }
+
     int res;
 
     if (bmount(argv[1]) == -1)

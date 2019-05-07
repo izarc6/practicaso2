@@ -1,5 +1,6 @@
 #include "directorios.h"
 
+// Lista el contenido de un directorios empleando mi_dir()
 int main(int argc, char const *argv[])
 {
     if (argc != 3)

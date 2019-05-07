@@ -3,6 +3,7 @@
 int c_tipo;
 char *c_inicial, *c_final;
 
+// Dado un camino que empieza con '/', separa lo que està contenido entre los primeros dos '/' en inicial y lo demàs en final
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
   int tipoInt;
   unsigned int lengthC = strlen(camino + 1), lengthF;
@@ -24,39 +25,50 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
     tipoInt = 1; //Es Directorio
     lengthF = strlen(final);
   }
+
+  // WORKAROUND - Aquì me daba segfault porque inicial es NULL, portanto creo otro char* de la longitud que
+  // necesitamos y asigno inicial a ese char*, asì puede seguir la ejecuciòn del programa
+  char inicial_debug[lengthC-lengthF+1];
+  inicial = inicial_debug;
+  
   strncpy(inicial, camino + 1, lengthC - lengthF);
   inicial[lengthC - lengthF] = '\0';
   if (inicial == NULL) {
     fprintf(stderr, "Error en directorios.c extraer_camino() --> Inicial\n");
     return -1;
   }
+
+  printf("DEBUG - Inicial: %s | Final: %s | Tipo: %d\n", inicial, final, tipoInt);
+
   return tipoInt; //Devuelve 0 si es Fichero o 1 si es Directorio
 }
 
+// Busca la entrada indicada entre las entradas del inodo correspondiente a su directorio padre
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
   struct inodo inodo_dir;
-  if (strcmp(camino_parcial,"/")) {
+  if (strcmp(camino_parcial,"/")==0) {
     *p_inodo = 0;  //la raiz siempre estara asociada al inodo 0
     *p_entrada = 0;
-    fprintf(stderr, "ERROR:Entrada es directorio raiz --> %d %s\n",errno, strerror(errno));
+    fprintf(stderr, "buscar_entrada() | ERROR: Entrada es directorio raiz --> %d %s\n",errno, strerror(errno));
     return 0;
   }
   c_tipo = extraer_camino(camino_parcial, c_inicial, c_final, NULL);
   if (c_tipo == -1) {
-    fprintf(stderr, "ERROR_EXTRAER_CAMINO\n --> %d %s",errno, strerror(errno));
+    fprintf(stderr, "buscar_entrada() | ERROR_EXTRAER_CAMINO --> %d %s\n",errno, strerror(errno));
     return -1;
   }
   if (leer_inodo(*p_inodo_dir, &inodo_dir)==-1) {
-    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n --> %d %s",errno, strerror(errno));
+    fprintf(stderr, "buscar_entrada() | ERROR_PERMISO_LECTURA --> %d %s\n",errno, strerror(errno));
     return -1;
   }
-  if ((inodo_dir.permisos & 4) == 4) {
-    fprintf(stderr, "ERROR:ERROR_PERMISO_LECTURA\n --> %d %s",errno, strerror(errno));
+  if ((inodo_dir.permisos & 4) != 4) {
+    fprintf(stderr, "buscar_entrada() | ERROR_PERMISO_LECTURA (permisos = 4) --> %d %s\n",errno, strerror(errno));
     return -1;
   }
   struct entrada entradas[max_entradas];
   unsigned int numentradas = inodo_dir.tamEnBytesLog / sizeof(struct entrada);
   unsigned int nentrada = 0, offset = 0, buffSize = max_entradas * sizeof(struct entrada);
+
   if (numentradas > 0) {
     int res = mi_read_f(*p_inodo_dir, entradas, offset, buffSize);
     while ((res > 0) && (nentrada < numentradas) && !strcmp(c_inicial, entradas[nentrada].nombre)) {
@@ -82,7 +94,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         return -1;
       }
       else {
-        strcpy(entradas[nentrada].nombre, c_inicial);
+        strcpy(entradas[nentrada].nombre, c_inicial);  // AQUI HAY SEGFAULT!!!
         if (c_tipo == 'd') {
           if (strcmp(c_final, "/")) {
             entradas[nentrada].ninodo = reservar_inodo('d', 6);
@@ -122,9 +134,12 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 }
 
 //////////////////NIVEL 9//////////////////
+
+// Crea un fichero/directorio y su entrada de directorio
 int mi_creat(const char *camino, unsigned char permisos){
   unsigned int p_inodo_dir, p_inodo, p_entrada;
   p_inodo_dir = 0; //Por simplicidad podemos suponer directamente que p_inodo_dir es 0
+
   int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, permisos);
   if(errores < 0){
     switch(errores){
@@ -146,6 +161,7 @@ int mi_creat(const char *camino, unsigned char permisos){
   return 0;
 }
 
+// Pone el contenido del directorio especificado en un buffer y devuelve el nùmero de entradas
 int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo_dir = 0;
   struct inodo inodo;
@@ -187,8 +203,7 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int
   numEntradas = inodo.tamEnBytesLog / sizeof(struct entrada),
   tamEntrada = 100;
-  char
-  *separador = " | ",
+  char *separador = " | ",
   strPermisos[5], strTamEnBytesLog[10], strTime[50], strTipo[2], strNinodo[10],
   strEntrada[tamEntrada * numEntradas];
   struct entrada bufferDir[numEntradas];
@@ -230,6 +245,7 @@ int mi_dir(const char *camino, char *buffer){
   return 0;
 }
 
+// Funciòn que permite cambiar los permisos de un fichero o de un directorio
 int mi_chmod(const char *camino, unsigned char permisos){
   unsigned int ninodo;
   int errores;
@@ -246,6 +262,7 @@ int mi_chmod(const char *camino, unsigned char permisos){
   return 0;
 }
 
+// Muestra la informaciòn acerca del inodo de un fichero o un directorio
 int mi_stat(const char *camino, struct STAT *p_stat){
   unsigned int ninodo;
   int errores;
