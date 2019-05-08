@@ -5,8 +5,13 @@
 #define max_entradas (BLOCKSIZE / sizeof(struct entrada))
 
 struct entrada {
-    char nombre[60];  //En el SF ext2 la longitud del nombre es 255
-    unsigned int ninodo;
+  char nombre[60];  //En el SF ext2 la longitud del nombre es 255
+  unsigned int ninodo;
+};
+
+struct UltimaEntrada {
+  char camino [512];
+  int p_inodo;
 };
 
 //////////////////Funciones//////////////////
