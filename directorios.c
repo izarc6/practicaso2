@@ -5,22 +5,21 @@ struct UltimaEntrada ultimaEntradaLeida;
 // Dado un camino que empieza con '/', separa lo que està contenido entre los primeros dos '/' en inicial y lo demàs en final
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo){
   int i = 0;
-  if (camino[0]!='/') {
+  if (camino[0] != '/') {
+    fprintf(stderr, "Error en directorios.c extraer_camino() --> El camino debe empezar con '/'\n");
     return -1;
   }
   const char *sig_camino = strchr(camino + 1,'/');
   memset(inicial,0,strlen(inicial));
   if(sig_camino==NULL){
-    //It's a file
     strcpy(inicial, camino+1);
     *final = '\0';
-    *tipo = 'f';
-  }else{
-    //It's a directory
+    *tipo = 'f'; //Es un file
+  } else {
     i = sig_camino - camino - 1;
     strncpy(inicial, camino + 1,i);
     strcpy(final, sig_camino);
-    *tipo = 'd';
+    *tipo = 'd'; //Es un directorio
   }
   return 0;
 }
@@ -68,26 +67,24 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
       offset = 0;
     }
   }
-  if (nentrada == numentrades){ //la entrada no existe
+  if (nentrada == numentrades){
     switch(reservar){
-      case 0:  //modo consulta. Como no existe retornamos error
+      case 0:
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> No existe entrada consulta\n");
       return -1;
       case 1:
       if (in.tipo=='f') {
         return -1;
       }
-      //Creamos la entrada en el directorio referenciado por *p_inodo_dir
       strcpy(entrada->nombre, inicial);
       if (tipo == 'd'){
         if (strcmp(final,"/")==0) {
-          // printf("reservamosDIRECTORIO\n");
           entrada->ninodo = reservar_inodo('d', permisos);
-        } else {//cuelgan más diretorios o ficheros
+        } else {
           fprintf(stderr, "Error en directorios.c buscar_entrada() --> No existe directorio intermedio\n");
           return -1;
         }
-      } else { //es un fichero
+      } else {
         entrada->ninodo = reservar_inodo('f', permisos);
       }
       if (mi_write_f(*p_inodo_dir, entrada, nentrada * sizeof(struct entrada), sizeof(struct entrada)) < 0) {
