@@ -2,7 +2,16 @@
 #include "ficheros.h"
 
 //////////////////Defines//////////////////
+#define MAX_CHAR 256
 #define max_entradas (BLOCKSIZE / sizeof(struct entrada))
+#define ERROR_EXTRAER_CAMINO -1
+#define ERROR_NO_EXISTE_ENTRADA_CONSULTA -2
+#define ERROR_NO_EXISTE_DIRECTORIO_INTERMEDIO -3
+#define ERROR_PERMISO_ESCRITURA -4
+#define ERROR_ENTRADA_YA_EXISTENTE -5
+#define ERROR_NO_DIRECTORIO -6
+#define ERROR_NO_FICHERO -7
+#define ERROR_PERMISO_LECTURA -8
 
 struct entrada {
   char nombre[60];  //En el SF ext2 la longitud del nombre es 255

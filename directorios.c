@@ -1,134 +1,143 @@
 #include "directorios.h"
 
-char *c_inicial, *c_final, c_tipo;
+char *inicialGlob, *finalGlob, tipoGlob;
 struct UltimaEntrada ultimaEntradaLeida;
 
 // Dado un camino que empieza con '/', separa lo que està contenido entre los primeros dos '/' en inicial y lo demàs en final
-int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
-  int tipoInt;
-  unsigned int lengthC = strlen(camino + 1), lengthF;
-  if (camino[0] != '/' || camino == NULL) {
-    fprintf(stderr, "Error en directorios.c extraer_camino() --> Debe empezar con el símbolo /");
+int extraer_camino(const char *camino, char *inicial, char *final, char *tipo){
+  int i = 0;
+  if (camino[0]!='/')
+  {
     return -1;
   }
-  if (lengthC < 1 || lengthC > 60) {
-    fprintf(stderr, "Error en directorios.c extraer_camino() --> Path inválido\n");
-    return -1;
-  }
-  final = strchr(camino + 1, '/');
-  if (final == NULL) {
-    tipoInt = 0; //Es Fichero
-    final = "/";
-    lengthF = 0;
-  }
-  else {
-    tipoInt = 1; //Es Directorio
-    lengthF = strlen(final);
-  }
-
-  // WORKAROUND - Aquì me daba segfault porque inicial es NULL, portanto creo otro char* de la longitud que
-  // necesitamos y asigno inicial a ese char*, asì puede seguir la ejecuciòn del programa
-  char inicial_debug[lengthC-lengthF+1];
-  inicial = inicial_debug;
-
-  strncpy(inicial, camino + 1, lengthC - lengthF);
-  inicial[lengthC - lengthF] = '\0';
-  if (inicial == NULL) {
-    fprintf(stderr, "Error en directorios.c extraer_camino() --> Inicial\n");
-    return -1;
+  const char *sig_camino = strchr(camino + 1,'/');
+  memset(inicial,0,strlen(inicial));
+  if(sig_camino==NULL){
+    //It's a file
+    strcpy(inicial, camino+1);
+    *final = '\0';
+    *tipo = 'f';
+  }else{
+    //It's a directory
+    i = sig_camino - camino - 1;
+    strncpy(inicial, camino + 1,i);
+    strcpy(final, sig_camino);
+    *tipo = 'd';
   }
 
-  printf("DEBUG - Inicial: %s | Final: %s | Tipo: %d\n", inicial, final, tipoInt);
-
-  return tipoInt; //Devuelve 0 si es Fichero o 1 si es Directorio
+  return 0;
 }
 
 // Busca la entrada indicada entre las entradas del inodo correspondiente a su directorio padre
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
-  struct inodo inodo_dir;
-  if (strcmp(camino_parcial,"/")==0) {
-    *p_inodo = 0;  //la raiz siempre estara asociada al inodo 0
-    *p_entrada = 0;
-    fprintf(stderr, "buscar_entrada() | ERROR: Entrada es directorio raiz --> %d %s\n",errno, strerror(errno));
+  if (strcmp(camino_parcial, "/") == 0) {
+    *p_inodo = 0;
+    *p_entrada =0;
+    // printf("----------------C\n");
     return 0;
   }
-  c_tipo = extraer_camino(camino_parcial, c_inicial, c_final, NULL);
-  if (c_tipo == -1) {
-    fprintf(stderr, "buscar_entrada() | ERROR_EXTRAER_CAMINO --> %d %s\n",errno, strerror(errno));
-    return -1;
+  char inicial[MAX_CHAR];
+  char final[strlen(camino_parcial)];
+  memset(inicial,0,MAX_CHAR);
+  memset(final,0,strlen(camino_parcial));
+  char tipo;
+  if (extraer_camino(camino_parcial, inicial, final,&tipo) == -1) {
+    return ERROR_EXTRAER_CAMINO;
   }
-  if (leer_inodo(*p_inodo_dir, &inodo_dir)==-1) {
-    fprintf(stderr, "buscar_entrada() | ERROR_PERMISO_LECTURA --> %d %s\n",errno, strerror(errno));
-    return -1;
-  }
-  if ((inodo_dir.permisos & 4) != 4) {
-    fprintf(stderr, "buscar_entrada() | ERROR_PERMISO_LECTURA (permisos = 4) --> %d %s\n",errno, strerror(errno));
-    return -1;
-  }
-  struct entrada entradas[max_entradas];
-  unsigned int numentradas = inodo_dir.tamEnBytesLog / sizeof(struct entrada);
-  unsigned int nentrada = 0, offset = 0, buffSize = max_entradas * sizeof(struct entrada);
+  // printf("final:%s\n", final);
+  // printf("inicial:%s\n", inicial);
 
-  if (numentradas > 0) {
-    int errores = mi_read_f(*p_inodo_dir, entradas, offset, buffSize);
-    while ((errores > 0) && (nentrada < numentradas) && !strcmp(c_inicial, entradas[nentrada].nombre)) {
-      nentrada++;
-      offset += buffSize;
-      errores = mi_read_f(*p_inodo_dir, entradas, offset, buffSize);
+  struct inodo in;
+  leer_inodo(*p_inodo_dir,&in);
+  char buffer[in.tamEnBytesLog];
+  struct entrada *entrada;
+  entrada = malloc(sizeof(struct entrada));
+  entrada->nombre[0] = '\0';
+
+  int numentrades = in.tamEnBytesLog / sizeof(struct entrada);
+  // printf("Numentrades:%d\n",numentrades );
+  int nentrada = 0;
+
+
+  if (numentrades > 0){
+
+    // 	// printf("numentradesMAJORqueCERO\n");
+    // 	if ((in.permisos & 4 )!= 4) return ERROR_PERMISO_LECTURA;
+    // 	mi_read_f(*p_inodo_dir, entrada, nentrada * sizeof(struct entrada), sizeof(struct entrada));
+    // 	while ((nentrada < numentrades) && (strcmp(entrada.nombre, inicial) != 0)){
+    // 		nentrada++;
+    // 		mi_read_f(*p_inodo_dir, entrada, nentrada * sizeof(struct entrada), sizeof(struct entrada));
+    // 	}
+
+    if ((in.permisos & 4) != 4) return ERROR_PERMISO_LECTURA;
+
+    int offset = 0; int encontrado = 1;
+    while(nentrada < numentrades && encontrado != 0)
+    {
+      mi_read_f(*p_inodo_dir, buffer, nentrada * sizeof(struct entrada), sizeof(buffer)); //leer siguiente entrada
+      memcpy(entrada, buffer, sizeof(struct entrada));
+      encontrado = strcmp(inicial, entrada->nombre);
+      while(offset < numentrades && nentrada < numentrades && encontrado != 0)
+      {
+        nentrada++;
+        offset++;
+        memcpy(entrada, offset * sizeof(struct entrada) + buffer, sizeof(struct entrada));
+        encontrado = strcmp(inicial, entrada->nombre);
+      }
+      offset = 0;
     }
-  }
-  if (nentrada == numentradas) {
-    switch (reservar) {
-      case 0:
-      fprintf(stderr, "buscar_entrada (directorios.c) --> No existe la entrada a consultar\n");
-      return -1;
-      break;
 
-      default:
-      if (inodo_dir.tipo == 'f') {
-        fprintf(stderr, "buscar_entrada (directorios.c) --> No es posible crear la entrada en un fichero\n");
+
+  }
+  if (nentrada == numentrades){ //la entrada no existe
+
+    switch(reservar){
+      case 0:  //modo consulta. Como no existe retornamos error
+      return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
+      case 1:
+      //modo escritura.
+      if (in.tipo=='f')
+      {
         return -1;
       }
-      else if ((inodo_dir.permisos & 2) != 2) {
-        fprintf(stderr, "buscar_entrada (directorios.c) --> El inodo %d no tiene permisos de escritura\n", *p_inodo_dir);
-        return -1;
+      //Creamos la entrada en el directorio referenciado por *p_inodo_dir
+      strcpy(entrada->nombre, inicial);
+      if (tipo == 'd'){
+        if (strcmp(final,"/")==0) {
+          // printf("reservamosDIRECTORIO\n");
+          entrada->ninodo = reservar_inodo('d', permisos);
+        }else{//cuelgan más diretorios o ficheros
+          return ERROR_NO_EXISTE_DIRECTORIO_INTERMEDIO;
+        }
+      }else{ //es un fichero
+
+        entrada->ninodo = reservar_inodo('f', permisos);
+
       }
-      else {
-        strcpy(entradas[nentrada].nombre, c_inicial);  // AQUI HAY SEGFAULT!!!
-        if (c_tipo == 'd') {
-          if (strcmp(c_final, "/")) {
-            entradas[nentrada].ninodo = reservar_inodo('d', 6);
-          }
-          else {
-            fprintf(stderr, "buscar_entrada (directorios.c) --> No existe directorio intermedio\n");
-            return -1;
-          }
+      if (mi_write_f(*p_inodo_dir, entrada, nentrada * sizeof(struct entrada), sizeof(struct entrada)) < 0) {
+        if (entrada->ninodo != -1) {
+
+          liberar_inodo(entrada->ninodo);
         }
-        else {
-          entradas[nentrada].ninodo = reservar_inodo('f', 6);
-        }
-        if (escribir_inodo(entradas[nentrada].ninodo, inodo_dir) == -1) {
-          if (entradas[nentrada].ninodo != -1) {
-            liberar_inodo(entradas[nentrada].ninodo);
-          }
-          return EXIT_FAILURE;
-        }
+        printf("4\n");
+        return ERROR_PERMISO_ESCRITURA;
       }
-      break;
     }
+
   }
 
-  if (strcmp(c_final, "/")) {
-    if ((nentrada < numentradas) && (reservar == 1)) {
-      fprintf(stderr, "buscar_entrada (directorios.c) --> La entrada ya existe\n");
-      return -1;
-    }
-    *p_inodo = entradas[nentrada].ninodo;
-    *p_entrada = entradas[nentrada].ninodo;
-    return EXIT_SUCCESS;
+  if ((strcmp(final,"/")==0) || strcmp(final, "\0") == 0){
+
+    if ((nentrada < numentrades) && (reservar == 1)) {return ERROR_ENTRADA_YA_EXISTENTE;}
+
+    *p_inodo = entrada->ninodo;
+    *p_entrada =nentrada;
+    return 0;
   } else {
-    *p_inodo_dir = entradas[nentrada].ninodo;
-    return buscar_entrada(c_final, p_inodo_dir, p_inodo, p_entrada, reservar, permisos);
+
+    *p_inodo_dir = entrada->ninodo;
+
+    return buscar_entrada(final, p_inodo_dir, p_inodo, p_entrada, reservar, permisos);
   }
 }
 
