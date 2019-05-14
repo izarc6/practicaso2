@@ -27,7 +27,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo){
 // Busca la entrada indicada entre las entradas del inodo correspondiente a su directorio padre
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
   if (strcmp(camino_parcial, "/") == 0) {
-    *p_inodo = 0;
+    *p_inodo = 0;   // Inodo raìz
     *p_entrada =0;
     return 0;
   }
@@ -41,13 +41,22 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     return -1;
   }
   struct inodo in;
-  leer_inodo(*p_inodo_dir,&in);
+
+  if (leer_inodo(*p_inodo_dir,&in) == -1) {
+      fprintf(stderr, "Error en directorios.c buscar_entrada() --> Ha ocurrido un error leyendo el inodo\n");
+      return -1;
+  }
+  printf("DEBUG - buscar_entrada() | Desp. de lectura inodo | *p_inodo: %d | *p_entrada: %d\n",*p_inodo,*p_entrada);
+
   char buffer[in.tamEnBytesLog];
   struct entrada *entrada;
   entrada = malloc(sizeof(struct entrada));
   entrada->nombre[0] = '\0';
   int numentrades = in.tamEnBytesLog / sizeof(struct entrada);
   int nentrada = 0;
+
+  printf("DEBUG - buscar_entrada() | numentrades: %d | nentrada: %d\n",numentrades,nentrada);
+
   if (numentrades > 0){
     if ((in.permisos & 4) != 4) {
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> No tiene permisos de lectura\n");
@@ -57,17 +66,25 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     while(nentrada < numentrades && encontrado != 0) {
       mi_read_f(*p_inodo_dir, buffer, nentrada * sizeof(struct entrada), sizeof(buffer)); //leer siguiente entrada
       memcpy(entrada, buffer, sizeof(struct entrada));
+
+      printf("DEBUG - buscar_entrada() | inicial: %s | entrada->nombre: %s\n",inicial,entrada->nombre);
+
       encontrado = strcmp(inicial, entrada->nombre);
+      printf("DEBUG - buscar_entrada() | strcmp en while 1 OK\n");
       while(offset < numentrades && nentrada < numentrades && encontrado != 0) {
+        printf("DEBUG - buscar_entrada() | EN WHILE 2\n");
         nentrada++;
         offset++;
         memcpy(entrada, offset * sizeof(struct entrada) + buffer, sizeof(struct entrada));
+        printf("DEBUG - buscar_entrada() | EN WHILE 2 | inicial: %s | entrada->nombre: %s\n",inicial,entrada->nombre);
         encontrado = strcmp(inicial, entrada->nombre);
+        printf("DEBUG - buscar_entrada() | strcmp en while 2 OK\n");
       }
       offset = 0;
     }
   }
   if (nentrada == numentrades){
+    printf("DEBUG - buscar_entrada() | En if 2\n");
     switch(reservar){
       case 0:
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> No existe entrada consulta\n");
@@ -97,13 +114,17 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
       }
     }
   }
+  printf("DEBUG - buscar_entrada() | Fuera de if 2\n");
   if ((strcmp(final,"/")==0) || strcmp(final, "\0") == 0){
+    printf("DEBUG - buscar_entrada() | strcmp final OK | final: %s\n",final);
     if ((nentrada < numentrades) && (reservar == 1)) {
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> Entrada ya existente\n");
       return -1;
     }
+    printf("DEBUG - buscar_entrada() | *p_inodo: %d | *p_entrada: %d\n",*p_inodo,*p_entrada);
     *p_inodo = entrada->ninodo;
-    *p_entrada =nentrada;
+    *p_entrada = nentrada;
+    printf("DEBUG - buscar_entrada() | Antes de return 0\n");
     return 0;
   } else {
     *p_inodo_dir = entrada->ninodo;
@@ -225,14 +246,19 @@ int mi_dir(const char *camino, char *buffer){
 
 // Funciòn que permite cambiar los permisos de un fichero o de un directorio
 int mi_chmod(const char *camino, unsigned char permisos){
-  unsigned int ninodo;
+  unsigned int ninodo = 0;
+  unsigned int debug1, debug2;
   int errores;
-  errores = buscar_entrada(camino, &ninodo, NULL, NULL, 0, 0);
+  printf("DEBUG - Antes de llamada a buscar_entrada (en mi_chmod())\n");
+  errores = buscar_entrada(camino, &ninodo, &debug1, &debug2, 0, 0);
+  printf("DEBUG - Después de llamada a buscar_entrada (en mi_chmod())\n");
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> No se ha encontrado la entrada %s\n", camino);
     return errores;
   }
+  printf("DEBUG - Antes de llamada a mi_chmod_f (en mi_chmod())\n");
   errores = mi_chmod_f(ninodo, permisos);
+  printf("DEBUG - Después de llamada a mi_chmod_f (en mi_chmod())\n");
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> No se han podido actualizar los permisos del inodo %d\n", ninodo);
     return errores;

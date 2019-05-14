@@ -203,6 +203,7 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
   // Actualizamos ctime
   inodo.ctime  = time(NULL);
   escribir_inodo(ninodo, inodo);
+  printf("DEBUG - mi_chmod_f() | Actualizado permisos del inodo %d a %c\n",ninodo,inodo.permisos);
   return 0;
 }
 
