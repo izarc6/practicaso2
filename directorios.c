@@ -31,6 +31,19 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     *p_entrada =0;
     return 0;
   }
+
+  if (p_inodo == NULL) {
+    printf("DEBUG - buscar_entrada() | p_inodo es null! Set a 0\n");
+    unsigned int placeholder = 0;
+    p_inodo = &placeholder;
+  }
+  if (p_entrada == NULL) {
+    printf("DEBUG - buscar_entrada() | p_entrada es null! Set a 0\n");
+    unsigned int placeholder = 0;
+    p_entrada = &placeholder;
+  }
+  
+
   char inicial[MAX_CHAR];
   char final[strlen(camino_parcial)];
   memset(inicial,0,MAX_CHAR);
@@ -165,7 +178,8 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo_dir = 0;
   struct inodo inodo;
   unsigned int ninodo = 0;
-  int errores = buscar_entrada(camino, &p_inodo_dir, NULL, NULL, 0, 0);
+  unsigned int debug1, debug2 = 0;
+  int errores = buscar_entrada(camino, &p_inodo_dir, &debug1, &debug2, 0, 0);
   if(errores < 0){
     switch(errores){
       case -1:
@@ -247,18 +261,14 @@ int mi_dir(const char *camino, char *buffer){
 // Funciòn que permite cambiar los permisos de un fichero o de un directorio
 int mi_chmod(const char *camino, unsigned char permisos){
   unsigned int ninodo = 0;
-  unsigned int debug1, debug2;
   int errores;
-  printf("DEBUG - Antes de llamada a buscar_entrada (en mi_chmod())\n");
-  errores = buscar_entrada(camino, &ninodo, &debug1, &debug2, 0, 0);
-  printf("DEBUG - Después de llamada a buscar_entrada (en mi_chmod())\n");
+  //errores = buscar_entrada(camino, &ninodo, &debug1, &debug2, 0, 0);
+  errores = buscar_entrada(camino, &ninodo, NULL, NULL, 0, 0);
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> No se ha encontrado la entrada %s\n", camino);
     return errores;
   }
-  printf("DEBUG - Antes de llamada a mi_chmod_f (en mi_chmod())\n");
   errores = mi_chmod_f(ninodo, permisos);
-  printf("DEBUG - Después de llamada a mi_chmod_f (en mi_chmod())\n");
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> No se han podido actualizar los permisos del inodo %d\n", ninodo);
     return errores;
