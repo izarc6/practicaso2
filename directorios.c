@@ -178,7 +178,7 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo_dir = 0;
   struct inodo inodo;
   unsigned int ninodo = 0;
-  unsigned int p_inodo, inicial;
+  unsigned int p_inodo, inicial = 0;
   int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &inicial, 0, '4');
   if(errores < 0){
     switch(errores){
@@ -197,7 +197,7 @@ int mi_dir(const char *camino, char *buffer){
     }
     return -1;
   }
-  if (leer_inodo(ninodo, &inodo) == -1) {
+  if (leer_inodo(p_inodo, &inodo) == -1) {
     fprintf(stderr, "Error en directorios.c mi_dir() --> No se ha podido leer el inodo %d\n", ninodo);
     return -1;
   }
@@ -213,21 +213,24 @@ int mi_dir(const char *camino, char *buffer){
   // Creamos la cadena de salida
   struct inodo inodoEntrada;
   struct tm *tm;
-  unsigned int
-  numEntradas = inodo.tamEnBytesLog / sizeof(struct entrada),
+  unsigned int numEntradas = inodo.tamEnBytesLog / sizeof(struct entrada),
   tamEntrada = 100;
-  char *separador = " | ",
+  char *separador = "\t| ",
   strPermisos[5], strTamEnBytesLog[10], strTime[50], strTipo[2], strNinodo[10],
   strEntrada[tamEntrada * numEntradas];
   struct entrada bufferDir[numEntradas];
   *strEntrada = '\0';
-  errores = mi_read_f(ninodo, bufferDir, 0, inodo.tamEnBytesLog);
+  errores = leer_inodo(p_inodo, &inodoEntrada);
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_dir()  --> Error en línea 310\n");
     return errores;
   }
-  for (int i = 0; i < numEntradas; ++i) {
-    if (leer_inodo(bufferDir[i].ninodo, &inodoEntrada) == -1) {
+  for (int i = 0; i < numEntradas; i++) {
+    if (mi_read_f(p_inodo,&bufferDir[i],i*sizeof(struct entrada),sizeof(struct entrada)) < 0) {
+      fprintf(stderr, "Error en directorios.c mi_dir()  --> No se ha podido leer la entrada %d\n", bufferDir[i].ninodo);
+      return -1;
+    }
+    if (leer_inodo(bufferDir[i].ninodo,&inodoEntrada) < 0) {
       fprintf(stderr, "Error en directorios.c mi_dir()  --> No se ha podido leer la entrada %d\n", bufferDir[i].ninodo);
       return -1;
     }
