@@ -181,20 +181,7 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo, inicial = 0;
   int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &inicial, 0, '4');
   if(errores < 0){
-    switch(errores){
-      case -1:
-      fprintf(stderr, "Error en directorios.c mi_dir() --> Tipo no adecuado\n");
-      break;
-      case -2:
-      fprintf(stderr, "Error en directorios.c mi_dir() --> No se puede leer el inodo\n");
-      break;
-      case -3:
-      fprintf(stderr, "Error en directorios.c mi_dir() --> El directorio donde apunta p_inodo_dir no tiene permisos de escritura\n");
-      break;
-      case -5:
-      fprintf(stderr, "Error en directorios.c mi_dir() --> Ya existe\n");
-      break;
-    }
+    fprintf(stderr, "Error en directorios.c mi_dir() --> Eror\n");
     return -1;
   }
   if (leer_inodo(p_inodo, &inodo) == -1) {
