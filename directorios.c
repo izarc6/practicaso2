@@ -260,7 +260,7 @@ int mi_stat(const char *camino, struct STAT *p_stat){
     fprintf(stderr, "Error en directorios.c mi_stat() --> No se ha encontrado la entrada %s\n", camino);
     return errores;
   }
-  errores = mi_stat_f(ninodo, p_stat);
+  errores = mi_stat_f(p_inodo, p_stat);
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_stat() --> No se ha podido obtener la información del inodo %d\n", ninodo);
     return errores;
