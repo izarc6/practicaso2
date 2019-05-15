@@ -253,7 +253,7 @@ int mi_chmod(const char *camino, unsigned char permisos){
 
 // Muestra la informaciòn acerca del inodo de un fichero o un directorio
 int mi_stat(const char *camino, struct STAT *p_stat){
-  unsigned int ninodo;
+  unsigned int ninodo = 0;
   unsigned int p_inodo, inicial;
   int errores = buscar_entrada(camino, &ninodo, &p_inodo, &inicial, 0, '4');
   if (errores < 0) {
@@ -270,7 +270,8 @@ int mi_stat(const char *camino, struct STAT *p_stat){
 
 //////////////////NIVEL 10/////////////////
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
-	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	unsigned int p_inodo_dir, p_inodo, p_entrada;
+  p_inodo_dir = 0;
 	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
 		p_inodo = ultimaEntradaLeida.p_inodo;
 	} else {
@@ -300,7 +301,8 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 
 //////////////////NIVEL 11/////////////////
 int mi_link(const char *camino1, const char *camino2){
-	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	unsigned int p_inodo_dir, p_inodo, p_entrada;
+  p_inodo_dir = 0;
 	struct entrada entrada;
 	struct inodo inodo;
 	if(buscar_entrada(camino1,&p_inodo_dir,&p_inodo,&p_entrada,0,'0') < 0){
@@ -322,7 +324,8 @@ int mi_link(const char *camino1, const char *camino2){
 }
 
 int mi_unlink(const char *camino){
-	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	unsigned int p_inodo_dir, p_inodo, p_entrada;
+  p_inodo_dir = 0;
 	struct entrada entrada;
 	int nentradas;
 	struct inodo inodo;

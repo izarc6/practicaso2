@@ -481,7 +481,6 @@ int liberar_inodo(unsigned int ninodo) {
   printf("NumBlOcupados es: %d\n",inodo.numBloquesOcupados);
   printf("bLiberados es: %d\n", bLiberados);
   if (inodo.numBloquesOcupados - bLiberados == 0) {  //TODO HERE
-    printf("Entramos en el if de liberar_inodo\n");
     // Marcar el inodo como tipo libre
     inodo.tipo = 'l';
   } else {
