@@ -10,7 +10,6 @@ void printStat(struct STAT stat){
     printf("nlinks: %u\n",stat.nlinks);
     printf("tamEnBytesLog: %u\n",stat.tamEnBytesLog);
     printf("numBloquesOcupados: %u\n",stat.numBloquesOcupados);
-    printf("\n");
 }
 
 // Permite mostrar la informaciòn acerca del inodo de un fichero o de un directorio empleando mi_stat()

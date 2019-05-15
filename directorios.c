@@ -154,20 +154,6 @@ int mi_creat(const char *camino, unsigned char permisos){
 
   int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, permisos);
   if(errores < 0){
-    switch(errores){
-      case -1:
-      fprintf(stderr, "Error en directorios.c mi_creat() --> Tipo no adecuado\n");
-      break;
-      case -2:
-      fprintf(stderr, "Error en directorios.c mi_creat() --> No se puede leer el inodo\n");
-      break;
-      case -3:
-      fprintf(stderr, "Error en directorios.c mi_creat() --> El directorio donde apunta p_inodo_dir no tiene permisos de escritura\n");
-      break;
-      case -5:
-      fprintf(stderr, "Error en directorios.c mi_creat() --> Ya existe\n");
-      break;
-    }
     return -1;
   }
   return 0;
@@ -181,7 +167,6 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo, inicial = 0;
   int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &inicial, 0, '4');
   if(errores < 0){
-    fprintf(stderr, "Error en directorios.c mi_dir() --> Eror\n");
     return -1;
   }
   if (leer_inodo(p_inodo, &inodo) == -1) {
@@ -209,7 +194,6 @@ int mi_dir(const char *camino, char *buffer){
   *strEntrada = '\0';
   errores = leer_inodo(p_inodo, &inodoEntrada);
   if (errores < 0) {
-    fprintf(stderr, "Error en directorios.c mi_dir()  --> Error en línea 310\n");
     return errores;
   }
   for (int i = 0; i < numEntradas; i++) {
@@ -287,12 +271,11 @@ int mi_stat(const char *camino, struct STAT *p_stat){
 //////////////////NIVEL 10/////////////////
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
   int errores;
-  unsigned int p_inodo, bytesLeidos = 0;
+  unsigned int p_inodo_dir, p_inodo, p_entrada, bytesLeidos = 0;
   if (strcmp(camino, ultimaEntradaLeida.camino) == 0) {
     p_inodo = ultimaEntradaLeida.p_inodo;
   } else {
-    unsigned int p_inodo, inicial;
-    errores = buscar_entrada(camino, &p_inodo, &p_inodo, &inicial, 0, '4');
+    errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '4');
     if (errores < 0) {
       fprintf(stderr, "Error en directorios.c mi_read() --> No se ha encontrado la entrada %s\n", camino);
       return -1;
@@ -309,31 +292,13 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
 	unsigned int p_inodo_dir, p_inodo, p_entrada;
 	p_inodo_dir = 0;
-	char permisos = '6';
-	// mi_waitSem();
-	//Comprobamos si el camino que nos pasan por parámetro es igual al último camino utilizado
 	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
 		p_inodo = ultimaEntradaLeida.p_inodo;
-	}else{ //Sino buscamos la entrada
-		int error=buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, permisos);
-			if(error<0){
-			switch(error){
-			case -1:
-				printf("Tipo no adecuado");
-				break;
-			case -2:
-				printf("No se puede leer el inodo");
-				break;
-			case -3:
-				printf("El directorio donde apunta p_inodo_dir no tiene permisos de escritura");
-				break;
-			case -4:
-				printf("No existe");
-				break;
-			}
+	} else {
+		int error=buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '6');
+		if(error < 0){
 			return -1;
 		}
-		//copiamos el inodo en la variable global
 		strcpy(ultimaEntradaLeida.camino, camino);
 		ultimaEntradaLeida.p_inodo = p_inodo;
 	}

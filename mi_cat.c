@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv) {
     if (argc != 3) {
-        fprintf(stderr, "mi_cat.c --> Uso correcto: ./mi_cat <disco> </ruta_fichero>\n");
+        fprintf(stderr, "Uso correcto: ./mi_cat <disco> </ruta_fichero>\n");
         return -1;
     }
     if (bmount(argv[1]) == -1) {
@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     char *camino = argv[2];
     unsigned int offset = 0, bytesLeidos = 0;
     char buf[BLOCKSIZE];
-    if (camino[strlen(argv[2] - 1)] == '/') {
+    if (camino[strlen(argv[2]) - 1] == '/') {
         fprintf(stderr, "mi_cat.c --> La entrada %s no es un fichero\n", camino);
         return -1;
     }
