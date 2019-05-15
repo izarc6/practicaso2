@@ -42,7 +42,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     unsigned int placeholder = 0;
     p_entrada = &placeholder;
   }
-  
 
   char inicial[MAX_CHAR];
   char final[strlen(camino_parcial)];
@@ -179,8 +178,8 @@ int mi_dir(const char *camino, char *buffer){
   unsigned int p_inodo_dir = 0;
   struct inodo inodo;
   unsigned int ninodo = 0;
-  unsigned int debug1, debug2 = 0;
-  int errores = buscar_entrada(camino, &p_inodo_dir, &debug1, &debug2, 0, 0);
+  unsigned int p_inodo, inicial;
+  int errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &inicial, 0, '4');
   if(errores < 0){
     switch(errores){
       case -1:
@@ -263,13 +262,14 @@ int mi_dir(const char *camino, char *buffer){
 int mi_chmod(const char *camino, unsigned char permisos){
   unsigned int ninodo = 0;
   int errores;
+  unsigned int p_inodo, inicial;
   //errores = buscar_entrada(camino, &ninodo, &debug1, &debug2, 0, 0);
-  errores = buscar_entrada(camino, &ninodo, NULL, NULL, 0, 0);
+  errores = buscar_entrada(camino, &ninodo, &p_inodo, &inicial, 0, permisos);
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> Ha ocurrido un error por la entrada %s\n", camino);
     return errores;
   }
-  errores = mi_chmod_f(ninodo, permisos);
+  errores = mi_chmod_f(p_inodo, permisos);
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_chmod() --> No se han podido actualizar los permisos del inodo %d\n", ninodo);
     return errores;
@@ -280,7 +280,8 @@ int mi_chmod(const char *camino, unsigned char permisos){
 // Muestra la informaciòn acerca del inodo de un fichero o un directorio
 int mi_stat(const char *camino, struct STAT *p_stat){
   unsigned int ninodo;
-  int errores = buscar_entrada(camino, &ninodo, NULL, NULL, 0, 0);
+  unsigned int p_inodo, inicial;
+  int errores = buscar_entrada(camino, &ninodo, &p_inodo, &inicial, 0, '4');
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_stat() --> No se ha encontrado la entrada %s\n", camino);
     return errores;
@@ -300,7 +301,8 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
   if (strcmp(camino, ultimaEntradaLeida.camino) == 0) {
     p_inodo = ultimaEntradaLeida.p_inodo;
   } else {
-    errores = buscar_entrada(camino, &p_inodo, NULL, NULL, 0, 0);
+    unsigned int p_inodo, inicial;
+    errores = buscar_entrada(camino, &p_inodo, &p_inodo, &inicial, 0, '4');
     if (errores < 0) {
       fprintf(stderr, "Error en directorios.c mi_read() --> No se ha encontrado la entrada %s\n", camino);
       return -1;
@@ -320,7 +322,8 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
   if (strcmp(camino, ultimaEntradaLeida.camino) == 0) {
     p_inodo = ultimaEntradaLeida.p_inodo;
   } else {
-    errores = buscar_entrada(camino, &p_inodo, NULL, NULL, 0, 0);
+    unsigned int p_inodo, inicial;
+    errores = buscar_entrada(camino, &p_inodo, &p_inodo, &inicial, 0, '6');
     if (errores < 0) {
       fprintf(stderr, "Error en directorios.c mi_write() --> No se ha encontrado la entrada %s\n", camino);
       return -1;
@@ -340,7 +343,7 @@ int mi_link(const char *camino1, const char *camino2) {
   struct entrada nuevaEntrada;
   int errores;
   unsigned int ninodo_f, ninodo_link, ninodo_d, nentrada, offsetNuevaEntrada;
-  errores = buscar_entrada(camino1, &ninodo_f, NULL, NULL, 0, 0);
+  errores = buscar_entrada(camino1, &ninodo_f, &ninodo_d, &nentrada, 0, '0');
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_link() --> No existe la entrada %s\n", camino1);
     return errores;
@@ -357,7 +360,7 @@ int mi_link(const char *camino1, const char *camino2) {
     fprintf(stderr, "Error en directorios.c mi_link() --> %s no es un fichero\n", camino1);
     return -1;
   }
-  errores = buscar_entrada(camino2, &ninodo_link, &ninodo_d, &nentrada, 1, 7);
+  errores = buscar_entrada(camino2, &ninodo_link, &ninodo_d, &nentrada, 1, '6');
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_link() --> No existe la entrada %s\n", camino2);
     return errores;
@@ -390,7 +393,7 @@ int mi_link(const char *camino1, const char *camino2) {
 int mi_unlink(const char *camino) {
   struct inodo inodo_f, inodo_d;
   unsigned int ninodo_f, ninodo_d, nentrada, nentradas_d;
-  int errores = buscar_entrada(camino, &ninodo_d, &ninodo_f, &nentrada, 0, 0);
+  int errores = buscar_entrada(camino, &ninodo_d, &ninodo_f, &nentrada, 0, '6');
   if (errores < 0) {
     fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido encontrar la entrada %s\n", camino);
     return errores;
