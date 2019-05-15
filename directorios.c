@@ -317,24 +317,41 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 }
 
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
-  int errores;
-  unsigned int p_inodo, bytesEscritos = 0;
-  if (strcmp(camino, ultimaEntradaLeida.camino) == 0) {
-    p_inodo = ultimaEntradaLeida.p_inodo;
-  } else {
-    unsigned int p_inodo, inicial;
-    errores = buscar_entrada(camino, &p_inodo, &p_inodo, &inicial, 0, '6');
-    if (errores < 0) {
-      fprintf(stderr, "Error en directorios.c mi_write() --> No se ha encontrado la entrada %s\n", camino);
-      return -1;
-    }
-  }
-  bytesEscritos = mi_write_f(p_inodo, buf, offset, nbytes);
-  if (bytesEscritos <= 0) {
-    fprintf(stderr, "Error en directorios.c mi_write() --> No se ha podido leer el inodo %d\n", p_inodo);
-    return -1;
-  }
-  return bytesEscritos;
+	unsigned int p_inodo_dir, p_inodo, p_entrada;
+	p_inodo_dir = 0;
+	char permisos = '6';
+	// mi_waitSem();
+	//Comprobamos si el camino que nos pasan por parámetro es igual al último camino utilizado
+	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
+		p_inodo = ultimaEntradaLeida.p_inodo;
+	}else{ //Sino buscamos la entrada
+		int error=buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, permisos);
+			if(error<0){
+			switch(error){
+			case -1:
+				printf("Tipo no adecuado");
+				break;
+			case -2:
+				printf("No se puede leer el inodo");
+				break;
+			case -3:
+				printf("El directorio donde apunta p_inodo_dir no tiene permisos de escritura");
+				break;
+			case -4:
+				printf("No existe");
+				break;
+			}
+			return -1;
+		}
+		//copiamos el inodo en la variable global
+		strcpy(ultimaEntradaLeida.camino, camino);
+		ultimaEntradaLeida.p_inodo = p_inodo;
+	}
+	int bytesLeidos;
+	if((bytesLeidos = mi_write_f(p_inodo, buf, offset, nbytes)) < 0){
+		return -1;
+	}
+	return bytesLeidos;
 }
 
 //////////////////NIVEL 11/////////////////

@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     char *camino = argv[2];
     char *texto = argv[3];
     unsigned int offset = atoi(argv[4]), length = strlen(texto);
-    if (camino[strlen(camino - 1)] == '/') {
+    if (camino[strlen(camino) - 1] == '/') {
         fprintf(stderr, "mi_escribir.c --> La entrada %s no es un fichero\n", camino);
         return -1;
     }
