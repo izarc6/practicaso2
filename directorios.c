@@ -270,23 +270,15 @@ int mi_stat(const char *camino, struct STAT *p_stat){
 
 //////////////////NIVEL 10/////////////////
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
-  int errores;
-  unsigned int p_inodo_dir, p_inodo, p_entrada, bytesLeidos = 0;
-  if (strcmp(camino, ultimaEntradaLeida.camino) == 0) {
-    p_inodo = ultimaEntradaLeida.p_inodo;
-  } else {
-    errores = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '4');
-    if (errores < 0) {
-      fprintf(stderr, "Error en directorios.c mi_read() --> No se ha encontrado la entrada %s\n", camino);
-      return -1;
-    }
-  }
-  bytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
-  if (bytesLeidos <= 0) {
-    fprintf(stderr, "Error en directorios.c mi_read() --> No se ha podido leer el inodo %d\n", p_inodo);
-    return -1;
-  }
-  return bytesLeidos;
+	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
+		p_inodo = ultimaEntradaLeida.p_inodo;
+	} else {
+		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '4') < 0) return -1;
+		strcpy(ultimaEntradaLeida.camino, camino);
+		ultimaEntradaLeida.p_inodo = p_inodo;
+	}
+	return mi_read_f(p_inodo, buf, offset, nbytes);
 }
 
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
@@ -295,10 +287,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
 		p_inodo = ultimaEntradaLeida.p_inodo;
 	} else {
-		int error=buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '6');
-		if(error < 0){
-			return -1;
-		}
+		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '6') < 0) return -1;
 		strcpy(ultimaEntradaLeida.camino, camino);
 		ultimaEntradaLeida.p_inodo = p_inodo;
 	}

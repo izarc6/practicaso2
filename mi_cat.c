@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         errores = mi_read(camino, buf, offset, BLOCKSIZE);
     }
     char bufInfo[100];
-    sprintf(bufInfo, "Nº de bytes leídos: %d\n", bytesLeidos);
+    sprintf(bufInfo, "\nTotal_leidos: %d\n", bytesLeidos);
     write(2, bufInfo, strlen(bufInfo));
     if (bumount() == -1) {
         fprintf(stderr, "mi_cat.c --> Error al desmontar el disco\n");
