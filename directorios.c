@@ -306,19 +306,18 @@ int mi_link(const char *camino1, const char *camino2){
 	if(buscar_entrada(camino1,&p_inodo_dir,&p_inodo,&p_entrada,0,'0') < 0){
 		return -1;
 	}
-	int ninodo = p_inodo;
-	if(leer_inodo(ninodo, &inodo) == -1) return -1;
+	if(leer_inodo(p_inodo, &inodo) == -1) return -1;
 	if(inodo.tipo != 'f' && (inodo.permisos & 4) != 4) return -1;
 	p_inodo_dir = 0;
 	if(buscar_entrada(camino2,&p_inodo_dir,&p_inodo,&p_entrada,1,'6') < 0) return -1;
 	if(mi_read_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) return -1;
 	liberar_inodo(entrada.ninodo);
-	entrada.ninodo = ninodo;
+	entrada.ninodo = p_inodo;
 	if(mi_write_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) return -1;
-	if(leer_inodo(ninodo, &inodo) == -1) return -1;
+	if(leer_inodo(p_inodo, &inodo) == -1) return -1;
 	inodo.nlinks++;
 	inodo.ctime = time(NULL);
-	escribir_inodo(ninodo, inodo);
+	escribir_inodo(p_inodo, inodo);
 	return 0;
 }
 
