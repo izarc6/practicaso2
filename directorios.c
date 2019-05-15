@@ -33,12 +33,12 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
   }
 
   if (p_inodo == NULL) {
-    printf("DEBUG - buscar_entrada() | p_inodo es null! Set a 0\n");
+    //printf("DEBUG - buscar_entrada() | p_inodo es null! Set a 0\n");
     unsigned int placeholder = 0;
     p_inodo = &placeholder;
   }
   if (p_entrada == NULL) {
-    printf("DEBUG - buscar_entrada() | p_entrada es null! Set a 0\n");
+    //printf("DEBUG - buscar_entrada() | p_entrada es null! Set a 0\n");
     unsigned int placeholder = 0;
     p_entrada = &placeholder;
   }
@@ -67,10 +67,10 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
   int numentrades = in.tamEnBytesLog / sizeof(struct entrada);
   int nentrada = 0;
 
-  printf("DEBUG - buscar_entrada() | numentrades: %d | nentrada: %d\n",numentrades,nentrada);
+  //printf("DEBUG - buscar_entrada() | numentrades: %d | nentrada: %d\n",numentrades,nentrada);
 
   if (numentrades > 0){
-    printf("DEBUG - buscar_entrada() | Permisos del inodo %d: %c\n",*p_inodo_dir, in.permisos);
+    //printf("DEBUG - buscar_entrada() | Permisos del inodo %d: %c\n",*p_inodo_dir, in.permisos);
     if ((in.permisos & 4) != 4) {
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> No tiene permisos de lectura\n");
       return -1;

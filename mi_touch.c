@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 			int charF = strlen(argv[3])-1;
 			if(argv[3][charF]!='/'){
 				if((error = mi_creat(argv[3], permisos)) == 0){
-					fprintf(stderr, "El directorio %s se ha creado correctamente con permisos %c\n", argv[3], permisos);
+					fprintf(stderr, "El fichero %s se ha creado correctamente con permisos %c\n", argv[3], permisos);
 				} else {
 					return -1;
 				}
