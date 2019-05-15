@@ -299,107 +299,51 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 }
 
 //////////////////NIVEL 11/////////////////
-int mi_link(const char *camino1, const char *camino2) {
-  struct inodo inodo_f, inodo_d;
-  struct entrada nuevaEntrada;
-  int errores;
-  unsigned int ninodo_f, ninodo_link, ninodo_d, nentrada, offsetNuevaEntrada;
-  errores = buscar_entrada(camino1, &ninodo_f, &ninodo_d, &nentrada, 0, '0');
-  if (errores < 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> No existe la entrada %s\n", camino1);
-    return errores;
-  }
-  if (leer_inodo(ninodo_f, &inodo_f) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> Error al leer el inodo de fichero %d\n", ninodo_f);
-    return -1;
-  }
-  if ((inodo_f.permisos & 4) != 4) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> El inodo %d no tiene permisos de lectura\n", ninodo_f);
-    return -1;
-  }
-  if (inodo_f.tipo != 'f') {
-    fprintf(stderr, "Error en directorios.c mi_link() --> %s no es un fichero\n", camino1);
-    return -1;
-  }
-  errores = buscar_entrada(camino2, &ninodo_link, &ninodo_d, &nentrada, 1, '6');
-  if (errores < 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> No existe la entrada %s\n", camino2);
-    return errores;
-  }
-  liberar_inodo(ninodo_link);
-  if (leer_inodo(ninodo_d, &inodo_d) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> Error al leer el inodo de directorio %d\n", ninodo_d);
-    return -1;
-  }
-  offsetNuevaEntrada = nentrada * sizeof(struct entrada);
-  errores = mi_read_f(ninodo_d, &nuevaEntrada, offsetNuevaEntrada, sizeof(struct entrada));
-  if (errores < 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> No se ha podido leer el inodo %d\n", ninodo_d);
-    return errores;
-  }
-  nuevaEntrada.ninodo = ninodo_f;
-  if (leer_inodo(ninodo_f, &inodo_f) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> Error al leer el inodo de fichero %d\n", ninodo_f);
-    return -1;
-  }
-  inodo_f.nlinks++;
-  inodo_f.ctime = time(NULL);
-  if (escribir_inodo(ninodo_f, inodo_f) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_link() --> Error al escribir en el inodo de fichero %d\n", ninodo_f);
-    return -1;
-  }
-  return 0;
+int mi_link(const char *camino1, const char *camino2){
+	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	struct entrada entrada;
+	struct inodo inodo;
+	if(buscar_entrada(camino1,&p_inodo_dir,&p_inodo,&p_entrada,0,'0') < 0){
+		return -1;
+	}
+	int ninodo = p_inodo;
+	if(leer_inodo(ninodo, &inodo) == -1) return -1;
+	if(inodo.tipo != 'f' && (inodo.permisos & 4) != 4) return -1;
+	p_inodo_dir = 0;
+	if(buscar_entrada(camino2,&p_inodo_dir,&p_inodo,&p_entrada,1,'6') < 0) return -1;
+	if(mi_read_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) return -1;
+	liberar_inodo(entrada.ninodo);
+	entrada.ninodo = ninodo;
+	if(mi_write_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) return -1;
+	if(leer_inodo(ninodo, &inodo) == -1) return -1;
+	inodo.nlinks++;
+	inodo.ctime = time(NULL);
+	escribir_inodo(ninodo, inodo);
+	return 0;
 }
 
-int mi_unlink(const char *camino) {
-  struct inodo inodo_f, inodo_d;
-  unsigned int ninodo_f, ninodo_d, nentrada, nentradas_d;
-  int errores = buscar_entrada(camino, &ninodo_d, &ninodo_f, &nentrada, 0, '6');
-  if (errores < 0) {
-    fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido encontrar la entrada %s\n", camino);
-    return errores;
-  }
-  if (leer_inodo(ninodo_f, &inodo_f) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido leer el inodo de fichero %d\n", ninodo_f);
-    return -1;
-  }
-  if (leer_inodo(ninodo_d, &inodo_d) != 0) {
-    fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido leer el inodo de directorio %d\n", ninodo_d);
-    return -1;
-  }
-  if (inodo_f.tipo == 'd' && inodo_f.tamEnBytesLog > 0) {
-    fprintf(stderr, "Error en directorios.c mi_unlink() --> No es posible borrar la entrada %s ya que es un directorio no vacío\n", camino);
-    return -1;
-  }
-  nentradas_d = inodo_d.tamEnBytesLog / sizeof(struct entrada);
-  if (nentrada == nentradas_d - 1) {
-    struct entrada ultEntrada;
-    unsigned int entradaBorrar = nentrada * sizeof(struct entrada), ultimaEntrada = inodo_d.tamEnBytesLog - sizeof(struct entrada);
-    errores = mi_read_f(ninodo_d, &ultEntrada, ultimaEntrada, sizeof(struct entrada));
-    if (errores < 0) {
-      fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido leer el inodo %d\n", ninodo_d);
-      return errores;
-    }
-    errores = mi_write_f(ninodo_d, &ultEntrada, entradaBorrar, sizeof(struct entrada));
-    if (errores < 0) {
-      fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido escribir en el inodo %d\n", ninodo_d);
-      return errores;
-    }
-    errores = mi_truncar_f(ninodo_d, (nentradas_d - 1) * sizeof(struct entrada));
-    if (errores < 0) {
-      fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido truncar el inodo %d\n", ninodo_d);
-      return errores;
-    }
-    inodo_f.nlinks--;
-    if (inodo_f.nlinks == 0) {
-      liberar_inodo(ninodo_f);
-    } else {
-      inodo_f.ctime = time(NULL);
-      if (escribir_inodo(ninodo_f, inodo_f) != 0) {
-        fprintf(stderr, "Error en directorios.c mi_unlink() --> No se ha podido escribir en el inodo %d\n", ninodo_f);
-        return -1;
-      }
-    }
-  }
-  return 0;
+int mi_unlink(const char *camino){
+	unsigned int p_inodo_dir, p_inodo, p_entrada = 0;
+	struct entrada entrada;
+	int nentradas;
+	struct inodo inodo;
+	if(buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,0,'6') < 0) return -1;
+	if(leer_inodo(p_inodo, &inodo) == -1) return -1;
+	if(inodo.tipo == 'd' && (inodo.tamEnBytesLog != 0)) return -1;
+	if(leer_inodo(p_inodo_dir, &inodo) == -1) return -1;
+	nentradas = inodo.tamEnBytesLog/sizeof(struct entrada);
+	if(p_entrada != nentradas - 1){
+		mi_read_f(p_inodo_dir, &entrada, (nentradas - 1) * sizeof(struct entrada), sizeof(struct entrada));
+		mi_write_f(p_inodo_dir, &entrada, p_entrada * sizeof(struct entrada), sizeof(struct entrada));
+	}
+	mi_truncar_f(p_inodo_dir, (nentradas - 1) * sizeof(struct entrada));
+	if(leer_inodo(p_inodo, &inodo) == -1) return -1;
+	inodo.nlinks--;
+	if(inodo.nlinks == 0) {
+		liberar_inodo(p_inodo);
+	} else{
+		inodo.ctime = time(NULL);
+		escribir_inodo(p_inodo, inodo);
+	}
+	return 0;
 }
