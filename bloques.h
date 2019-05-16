@@ -7,11 +7,14 @@
 #include <errno.h>      // errno
 #include <string.h>     // strerror()
 #include <time.h>       // time_t
+#include "semaforo_mutex_posix.h"
 
 //////////////////Defines//////////////////
 #define BLOCKSIZE 1024  // bytes de tamaño de bloque logico
 
 //////////////////Funciones//////////////////
+void mi_waitSem();
+void mi_signalSem();
 int bmount(const char *camino);
 int bumount();
 int bwrite(unsigned int nbloque, const void *buf);
