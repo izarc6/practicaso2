@@ -50,7 +50,7 @@ void proceso(int pid, char *disco){
     registro.pid = getpid();
     registro.nEscritura = i + 1;
     registro.nRegistro =  rand() % REGMAX;
-    if(mi_write(camino,&registro,registro.posicion*sizeof(struct REGISTRO),sizeof(struct REGISTRO)) < 0){
+    if(mi_write(camino,&registro,registro.nRegistro*sizeof(struct REGISTRO),sizeof(struct REGISTRO)) < 0){
       fprintf(stderr, "Fallo en la escritura en %s\n", camino);
       exit(1);
     }
