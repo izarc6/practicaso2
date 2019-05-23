@@ -17,29 +17,32 @@ void mi_signalSem() {
 
 // bmount: Abre el file system para la lectura/escritura
 int bmount(const char *camino) {
-  int fd = open(camino, O_RDWR | O_CREAT, 0666);
-  if (fd == -1) {
-    fprintf(stderr, "ERROR fallo en abertura. \n");
-    return -1;
-  }
-  if (!mutex) {
-    mutex = initSem();
-    if (mutex == SEM_FAILED) return -1;
-  }
-  descriptor = fd;
-  return fd;
+   if (descriptor > 0) {
+       close(descriptor);
+   }
+   if ((descriptor = open(camino, O_RDWR | O_CREAT, 0666)) == -1) {
+      fprintf(stderr, "Error: bloques.c → bmount() → open()\n");
+   }
+   if (!mutex) { //mutex == 0
+   //el semáforo es único y sólo se ha de inicializar una vez en nuestro sistema (lo hace el padre)
+       mutex = initSem(); //lo inicializa a 1
+       if (mutex == SEM_FAILED) {
+           return -1;
+       }
+   }
+   return descriptor;
 }
 
 // bumount: "Desmonta" el file system que hemos abierto para la lectura/escritura
 int bumount() {
-  int fc = close(descriptor);
-  if (fc == -1) {
-    //Error
-    fprintf(stderr, "ERROR: fallo al cerrar. \n");
-    return -1;
-  }
-  deleteSem();
-  return 0;
+   descriptor = close(descriptor);
+   // hay que asignar el resultado de la operación a la variable ya que bmount() la utiliza
+   if (descriptor == -1) {
+       fprintf(stderr, "Error: bloques.c → bumount() → close(): %d: %s\n", errno, strerror(errno));
+       return -1;
+   }
+   deleteSem(); // borramos semaforo
+   return 0;
 }
 
 // escriure un bloc, el indicat per nbloque, s'sescriu *buf
