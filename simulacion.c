@@ -3,12 +3,13 @@
 char dirPrueba[20];
 int acabados;
 
-//El enterrador trata los procesos zombies e incrementa la variable de acabados
-void reaper() {
+void reaper(){
   pid_t ended;
   signal(SIGCHLD, reaper);
-  while((ended=waitpid(-1, NULL, WNOHANG)) > 0){
+  while ((ended=waitpid(-1, NULL, WNOHANG))>0) {
     acabados++;
+    //Podemos testear qué procesos van acabando:
+    fprintf(stderr, "acabado: %d total acabados: %d\n", ended, acabados);
   }
 }
 
@@ -30,14 +31,14 @@ void proceso(int pid, char *disco){
   strcpy(camino,dirPrueba);
   strcat(camino, pidDirectorio);
   //Creamos el directorio del proceso
-  if(mi_creat(camino, '7') != '0'){
+  if(mi_creat(camino, '7') != 0){
     bumount();
     exit(1);
   }
   strcpy(camino2, camino);
   sprintf(camino, "%sprueba.dat", camino);
   //Creamos pureba.dat
-  if(mi_creat(camino, 6) != 0){
+  if(mi_creat(camino, '6') != 0){
     bumount();
     exit(1);
   }
@@ -81,7 +82,7 @@ int main (int argc, char **argv) {
   strftime(fech, sizeof(fech), "%Y%m%d%H%M%S/", ts);
   strcpy(dirPrueba, f);
   strcat(dirPrueba, fech);
-  if(mi_creat(dirPrueba, 7) < 0) {
+  if(mi_creat(dirPrueba, '7') < 0) {
     fprintf(stderr, "El directorio '%s' no se ha podido crear\n", dirPrueba);
     bumount();
     return -1;
