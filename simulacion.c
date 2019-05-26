@@ -28,9 +28,8 @@ void proceso(int pid, char *disco){
   }
   sprintf(pidDirectorio, "proceso_%d/", pid);
   fprintf(stderr, "proceso_%d/\n", pid);
-  memset(dirPrueba,0,sizeof(dirPrueba));
   memset(camino,0,sizeof(camino));
-  strcpy(camino,dirPrueba);
+  strcpy(camino, dirPrueba);
   strcat(camino, pidDirectorio);
   //Creamos el directorio del proceso
   if(mi_creat(camino, '7') != 0){
