@@ -25,7 +25,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo){
 }
 
 // Busca la entrada indicada entre las entradas del inodo correspondiente a su directorio padre
-int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos){
+int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, int reservar, unsigned char permisos){
   if (strcmp(camino_parcial, "/") == 0) {
     *p_inodo = 0;   // Inodo raìz
     *p_entrada =0;
