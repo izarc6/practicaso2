@@ -27,7 +27,7 @@ void proceso(int pid, char *disco){
     exit(1);
   }
   sprintf(pidDirectorio, "proceso_%d/", pid);
-  fprintf(stderr, "proceso_%d/\n", pid);
+  //fprintf(stderr, "proceso_%d/", pid);
   memset(camino,0,sizeof(camino));
   strcpy(camino, dirPrueba);
   strcat(camino, pidDirectorio);
@@ -39,11 +39,18 @@ void proceso(int pid, char *disco){
   memset(camino2,0,sizeof(camino2));
   strcpy(camino2, camino);
   fprintf(stderr, "%sprueba.dat\n", camino);
+  sprintf(camino2, "%sprueba.dat", camino2);
+
+  //fprintf(stderr, "**DEBUG - camino completo: %s**\n",camino2);
+
   //Creamos pureba.dat
-  if(mi_creat(camino, '6') != 0){
+  if(mi_creat(camino2, '6') != 0){
+    fprintf(stderr, "simulacion.c - Error en la creaciòn del fichero \"prueba.dat\"\n");
     bumount();
     exit(1);
   }
+  //fprintf(stderr, "DEBUG - Creado fichero prueba.dat\n");
+
   //Escribimos los registros
   srand(time(NULL) + getpid());
   for(int i = 0; i < NUMESCRITURAS; i++) {
@@ -51,8 +58,8 @@ void proceso(int pid, char *disco){
     registro.pid = getpid();
     registro.nEscritura = i + 1;
     registro.nRegistro =  rand() % REGMAX;
-    if(mi_write(camino,&registro,registro.nRegistro*sizeof(struct REGISTRO),sizeof(struct REGISTRO)) < 0){
-      fprintf(stderr, "Fallo en la escritura en %s\n", camino);
+    if(mi_write(camino2,&registro,registro.nRegistro*sizeof(struct REGISTRO),sizeof(struct REGISTRO)) < 0){
+      fprintf(stderr, "Fallo en la escritura en %s\n", camino2);
       exit(1);
     }
     usleep(50000);

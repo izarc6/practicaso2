@@ -104,6 +104,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
       return -1;
       case 1:
       if (in.tipo=='f') {
+        fprintf(stderr, "Error en directorios.c buscar_entrada() --> Reservar = 1 y tipo de inodo = 'f'\n");
         return -1;
       }
       strcpy(entrada->nombre, inicial);
@@ -121,7 +122,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         if (entrada->ninodo != -1) {
           liberar_inodo(entrada->ninodo);
         }
-        printf("4\n");
         fprintf(stderr, "Error en directorios.c buscar_entrada() --> No tiene permisos de escritura\n");
         return -1;
       }
@@ -134,13 +134,14 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
       fprintf(stderr, "Error en directorios.c buscar_entrada() --> Entrada ya existente\n");
       return -1;
     }
-    //printf("DEBUG - buscar_entrada() | *p_inodo: %d | *p_entrada: %d\n",*p_inodo,*p_entrada);
     *p_inodo = entrada->ninodo;
     *p_entrada = nentrada;
+    //printf("DEBUG - buscar_entrada() | *p_inodo: %d | *p_entrada: %d\n",*p_inodo,*p_entrada);
     //printf("DEBUG - buscar_entrada() | Antes de return 0\n");
     return 0;
   } else {
     *p_inodo_dir = entrada->ninodo;
+    //printf("DEBUG - buscar_entrada() | A final de todo, llamada recursiva\n");
     return buscar_entrada(final, p_inodo_dir, p_inodo, p_entrada, reservar, permisos);
   }
 }
@@ -278,7 +279,10 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
 		p_inodo = ultimaEntradaLeida.p_inodo;
 	} else {
-		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '4') < 0) mi_signalSem(); return -1;
+		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '4') < 0) {
+      mi_signalSem();
+      return -1;
+    }
 		strcpy(ultimaEntradaLeida.camino, camino);
 		ultimaEntradaLeida.p_inodo = p_inodo;
 	}
@@ -290,15 +294,24 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
   mi_waitSem();
 	unsigned int p_inodo_dir, p_inodo, p_entrada;
 	p_inodo_dir = 0;
-	if(strcmp (camino, ultimaEntradaLeida.camino) == 0) {
+	if(strcmp(camino, ultimaEntradaLeida.camino) == 0) {
 		p_inodo = ultimaEntradaLeida.p_inodo;
 	} else {
-		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '6') < 0) mi_signalSem(); return -1;
+		if(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, '6') < 0) {
+      mi_signalSem();
+      //printf("DEBUG - mi_write | buscar_entrada ha ido mal\n");
+      return -1;
+    }
 		strcpy(ultimaEntradaLeida.camino, camino);
 		ultimaEntradaLeida.p_inodo = p_inodo;
+    //printf("DEBUG - mi_write | buscar_entrada ha ido bien\n");
 	}
-	int bytesLeidos;
-	if((bytesLeidos = mi_write_f(p_inodo, buf, offset, nbytes)) < 0) mi_signalSem(); return -1;
+	int bytesLeidos = mi_write_f(p_inodo, buf, offset, nbytes);
+  //printf("DEBUG - mi_write | mi_write_f ha acabado con resultado %d\n",bytesLeidos);
+	if(bytesLeidos < 0) {
+    mi_signalSem();
+    return -1;
+  }
   mi_signalSem();
 	return bytesLeidos;
 }
@@ -309,17 +322,38 @@ int mi_link(const char *camino1, const char *camino2){
 	unsigned int p_inodo_dir = 0, p_inodo = 0, p_entrada = 0;
 	struct entrada entrada;
 	struct inodo inodo;
-	if(buscar_entrada(camino1,&p_inodo_dir,&p_inodo,&p_entrada,0,'0') < 0) mi_signalSem(); return -1;
+	if(buscar_entrada(camino1,&p_inodo_dir,&p_inodo,&p_entrada,0,'0') < 0) {
+    mi_signalSem();
+    return -1;
+  }
   int ninodo = p_inodo;
-	if(leer_inodo(ninodo, &inodo) == -1) mi_signalSem(); return -1;
-  if(inodo.tipo != 'f' && (inodo.permisos & 4) != 4) mi_signalSem(); return -1;
+	if(leer_inodo(ninodo, &inodo) == -1) {
+    mi_signalSem();
+    return -1;
+  }
+  if(inodo.tipo != 'f' && (inodo.permisos & 4) != 4) {
+    mi_signalSem();
+    return -1;
+  }
 	p_inodo_dir = 0;
-	if(buscar_entrada(camino2,&p_inodo_dir,&p_inodo,&p_entrada,1,'6') < 0) mi_signalSem(); return -1;
-	if(mi_read_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) mi_signalSem(); return -1;
+	if(buscar_entrada(camino2,&p_inodo_dir,&p_inodo,&p_entrada,1,'6') < 0) {
+    mi_signalSem();
+    return -1;
+  }
+	if(mi_read_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) {
+    mi_signalSem();
+    return -1;
+  }
 	liberar_inodo(entrada.ninodo);
 	entrada.ninodo = ninodo;
-	if(mi_write_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) mi_signalSem(); return -1;
-	if(leer_inodo(ninodo, &inodo) == -1) mi_signalSem(); return -1;
+	if(mi_write_f(p_inodo_dir,&entrada,p_entrada*sizeof(struct entrada),sizeof(struct entrada))==-1) {
+    mi_signalSem();
+    return -1;
+  }
+	if(leer_inodo(ninodo, &inodo) == -1) {
+    mi_signalSem();
+    return -1;
+  }
 	inodo.nlinks++;
 	inodo.ctime = time(NULL);
 	escribir_inodo(ninodo, inodo);
@@ -333,17 +367,32 @@ int mi_unlink(const char *camino){
 	struct entrada entrada;
 	int nentradas;
 	struct inodo inodo;
-	if(buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,0,'6') < 0) mi_signalSem(); return -1;
-	if(leer_inodo(p_inodo, &inodo) == -1) mi_signalSem(); return -1;
-	if(inodo.tipo == 'd' && (inodo.tamEnBytesLog != 0)) mi_signalSem(); return -1;
-	if(leer_inodo(p_inodo_dir, &inodo) == -1) mi_signalSem(); return -1;
+	if(buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,0,'6') < 0) {
+    mi_signalSem();
+    return -1;
+  }
+	if(leer_inodo(p_inodo, &inodo) == -1) {
+    mi_signalSem();
+    return -1;
+  }
+	if(inodo.tipo == 'd' && (inodo.tamEnBytesLog != 0)) {
+    mi_signalSem();
+    return -1;
+  }
+	if(leer_inodo(p_inodo_dir, &inodo) == -1) {
+    mi_signalSem();
+    return -1;
+  }
 	nentradas = inodo.tamEnBytesLog/sizeof(struct entrada);
 	if(p_entrada != nentradas - 1){
 		mi_read_f(p_inodo_dir, &entrada, (nentradas - 1) * sizeof(struct entrada), sizeof(struct entrada));
 		mi_write_f(p_inodo_dir, &entrada, p_entrada * sizeof(struct entrada), sizeof(struct entrada));
 	}
 	mi_truncar_f(p_inodo_dir, (nentradas - 1) * sizeof(struct entrada));
-	if(leer_inodo(p_inodo, &inodo) == -1) mi_signalSem(); return -1;
+	if(leer_inodo(p_inodo, &inodo) == -1) {
+    mi_signalSem();
+    return -1;
+  }
 	inodo.nlinks--;
 	if(inodo.nlinks == 0) {
 		liberar_inodo(p_inodo);
