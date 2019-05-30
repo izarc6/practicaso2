@@ -2,7 +2,7 @@
 
 #define NENTRADAS 100
 #define NUMREGISTROS 200
-#define CANTBUFFER 3000
+#define INDEX 3000
 
 struct INFORMACION {
     int pid;

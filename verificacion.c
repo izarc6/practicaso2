@@ -9,6 +9,8 @@ int main (int argc, char **argv) {
 	bmount(ruta);
 	char *camino = argv[2];
 
+	fprintf(stderr, "dir_sim: %s\n", camino);
+
 	struct STAT stat;
 	if(mi_stat(camino, &stat) < 0){
 		fprintf(stderr, "verificacion.c --> No se ha podido obtener STAT\n");
@@ -19,6 +21,8 @@ int main (int argc, char **argv) {
 		fprintf(stderr, "verificacion.c --> No aparecen 100 entradas\n");
 		return -1;
 	}
+
+	fprintf(stderr, "numentradas: %d NUMPROCESOS: %d\n", NENTRADAS, NUMPROCESOS);
 
 	char camino_informe[100];
 	char aux[15];
@@ -51,12 +55,8 @@ int main (int argc, char **argv) {
 	char date [80];
 	struct tm *ts;
 
-	struct REGISTRO buffreg[CANTBUFFER];
-
-	struct REGISTRO primera;
-	struct REGISTRO ultima;
-	struct REGISTRO mayor;
-	struct REGISTRO menor;
+	struct INFORMACION info;
+	struct REGISTRO buffreg[INDEX];
 	char buffer_esc[BLOCKSIZE];
 	int off_info=0;
 
@@ -75,34 +75,33 @@ int main (int argc, char **argv) {
 			memset(&buffreg, 0, sizeof(buffreg));
 			//Leemos las 100 entradas que tiene que tener el fichero
 			if((bytesRe=mi_read(path_prueba, &buffreg, j*sizeof(struct REGISTRO), sizeof(buffreg))) < 0){
-				fprintf(stderr, "ERROR: Lectura de entrada incorrecta.-Interno\n");
+				fprintf(stderr, "verificacion.c --> Lectura de entrada incorrecta.\n");
 				return -1;
 			}
-			for (int n = 0; n < CANTBUFFER; n++)
-			{
+			for (int n = 0; n < INDEX; n++) {
 				if(buffreg[n].pid==pid){
 					if (contador==0){
-						primera=buffreg[n];
-						ultima=buffreg[n];
-						mayor=buffreg[n];
-						menor=buffreg[n];
+						info.PrimeraEscritura=buffreg[n];
+						info.UltimaEscritura=buffreg[n];
+						info.MayorPosicion=buffreg[n];
+						info.MenorPosicion=buffreg[n];
 					}
-					if (buffreg[n].nEscritura<primera.nEscritura){
-						primera=buffreg[n];
+					if (buffreg[n].nEscritura<info.PrimeraEscritura.nEscritura){
+						info.PrimeraEscritura=buffreg[n];
 					}
-					if (ultima.nEscritura<buffreg[n].nEscritura){
-						ultima=buffreg[n];
+					if (info.UltimaEscritura.nEscritura<buffreg[n].nEscritura){
+						info.UltimaEscritura=buffreg[n];
 					}
-					if (buffreg[n].nRegistro<menor.nRegistro){
-						menor=buffreg[n];
+					if (buffreg[n].nRegistro<info.MenorPosicion.nRegistro){
+						info.MenorPosicion=buffreg[n];
 					}
-					if (mayor.nRegistro<buffreg[n].nRegistro){
-						mayor=buffreg[n];
+					if (info.MayorPosicion.nRegistro<buffreg[n].nRegistro){
+						info.MayorPosicion=buffreg[n];
 					}
 					contador++;
 				}
 			}
-			j+=CANTBUFFER;
+			j+=INDEX;
 		}
 		memset(buffer_esc, 0, BLOCKSIZE);
 
@@ -111,24 +110,24 @@ int main (int argc, char **argv) {
 		sprintf(buffer_esc + strlen(buffer_esc), "Numero escrituras: %d\n", contador);
 
 		//PRIMERA ESCRITURA
-		ts = localtime(&primera.fecha);
+		ts = localtime(&info.PrimeraEscritura.fecha);
 		strftime(date, sizeof(date), "%a %Y-%m-%d %H:%M:%S", ts);
-		sprintf(buffer_esc + strlen(buffer_esc), "Primera Escritura\t%u\t%u\t%s\n", primera.nEscritura, primera.nRegistro, date);
+		sprintf(buffer_esc + strlen(buffer_esc), "Primera Escritura\t%u\t%u\t%s\n", info.PrimeraEscritura.nEscritura, info.PrimeraEscritura.nRegistro, date);
 
 		//ULTIMA ESCRITURA
-		ts = localtime(&ultima.fecha);
+		ts = localtime(&info.UltimaEscritura.fecha);
 		strftime(date, sizeof(date), "%a %Y-%m-%d %H:%M:%S", ts);
-		sprintf(buffer_esc + strlen(buffer_esc), "Última Escritura\t%u\t%u\t%s\n", ultima.nEscritura, ultima.nRegistro, date);
+		sprintf(buffer_esc + strlen(buffer_esc), "Última Escritura\t%u\t%u\t%s\n", info.UltimaEscritura.nEscritura, info.UltimaEscritura.nRegistro, date);
 
 		//MENOR POSICION
-		ts = localtime(&menor.fecha);
+		ts = localtime(&info.MenorPosicion.fecha);
 		strftime(date, sizeof(date), "%a %Y-%m-%d %H:%M:%S", ts);
-		sprintf(buffer_esc + strlen(buffer_esc), "Menor Posición\t\t%u\t%u\t%s\n", menor.nEscritura, menor.nRegistro, date);
+		sprintf(buffer_esc + strlen(buffer_esc), "Menor Posición\t\t%u\t%u\t%s\n", info.MenorPosicion.nEscritura, info.MenorPosicion.nRegistro, date);
 
 		//MAYOR POSICION
-		ts = localtime(&mayor.fecha);
+		ts = localtime(&info.MayorPosicion.fecha);
 		strftime(date, sizeof(date), "%a %Y-%m-%d %H:%M:%S", ts);
-		sprintf(buffer_esc + strlen(buffer_esc), "Mayor Posición\t\t%u\t%u\t%s\n", mayor.nEscritura, mayor.nRegistro, date);
+		sprintf(buffer_esc + strlen(buffer_esc), "Mayor Posición\t\t%u\t%u\t%s\n", info.MayorPosicion.nEscritura, info.MayorPosicion.nRegistro, date);
 
 		//Escritura
 		if(mi_write(camino_informe, buffer_esc, off_info, strlen(buffer_esc))< 0){
