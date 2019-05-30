@@ -3,7 +3,7 @@
 char dirPrueba[69];
 char camino[69];
 char camino2[200];
-int acabados;
+static int acabados;
 
 void reaper(){
   pid_t ended;
@@ -11,7 +11,8 @@ void reaper(){
   while ((ended=waitpid(-1, NULL, WNOHANG))>0) {
     acabados++;
     //Podemos testear qué procesos van acabando:
-    fprintf(stderr, "Proceso %d: Completadas %d escrituras en %s\n", acabados, NUMESCRITURAS, dirPrueba);
+    //fprintf(stderr, "Proceso %d: Completadas %d escrituras en %s\n", acabados, NUMESCRITURAS, camino);
+    //fflush(stderr);
   }
 }
 
@@ -19,7 +20,7 @@ void reaper(){
 * para cada proceso, guardando en el fichero las correspondientes escrituras (1-50).
 */
 void proceso(int pid, char *disco){
-  char pidDirectorio[8];
+  char pidDirectorio[16];
   struct REGISTRO registro;
   if (bmount(disco) == -1) {
     fprintf(stderr, "Error al montar el disco para el proceso con PID %d\n", pid);
@@ -38,7 +39,9 @@ void proceso(int pid, char *disco){
   }
   memset(camino2,0,sizeof(camino2));
   strcpy(camino2, camino);
-  fprintf(stderr, "%sprueba.dat\n", camino);
+  fprintf(stderr, "Proceso %d: Completadas %d escrituras en %sprueba.dat\n", acabados, NUMESCRITURAS, camino);
+  fflush(stderr);
+  //fprintf(stderr, "%sprueba.dat\n", camino);
   sprintf(camino2, "%sprueba.dat", camino2);
 
   //fprintf(stderr, "**DEBUG - camino completo: %s**\n",camino2);
@@ -99,12 +102,16 @@ int main (int argc, char **argv) {
   //Asignamos la función enterrador a la señal de finalización de un hijo
   signal(SIGCHLD, reaper);
   for (int i = 1; i <= NUMPROCESOS; i++) {
-    if(fork() == 0) proceso(getpid(), argv[1]);
+    if(fork() == 0) {
+      proceso(getpid(), argv[1]);
+    }
     //Esperamos 0.2 s
     usleep(200000);
   }
   //Esperamos a que todos los procesos acaben
-  while (acabados < NUMPROCESOS) pause();
+  while (acabados < NUMPROCESOS) {
+    pause();
+  }
   fprintf(stderr, "Total de procesos terminados: %d.\n", acabados);
   bumount();
   exit(0);
