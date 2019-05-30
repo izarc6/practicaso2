@@ -6,10 +6,6 @@
 #define NUMPROCESOS 100
 #define NUMESCRITURAS 50
 
-// Para simplificar la busqueda de errores
-//#define NUMPROCESOS 1
-//#define NUMESCRITURAS 1
-
 struct REGISTRO {
     time_t fecha; //fecha de la escritura en formato epoch
     pid_t pid; //PID del proceso que lo ha creado

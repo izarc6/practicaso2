@@ -11,7 +11,7 @@ void reaper(){
   while ((ended=waitpid(-1, NULL, WNOHANG))>0) {
     acabados++;
     //Podemos testear qué procesos van acabando:
-    //fprintf(stderr, "Proceso %d: Completadas %d escrituras en %s\n", acabados, NUMESCRITURAS, camino);
+    //fprintf(stderr, "acabado: %d total acabados: %d\n", ended, acabados);
     //fflush(stderr);
   }
 }
@@ -39,9 +39,8 @@ void proceso(int pid, char *disco){
   }
   memset(camino2,0,sizeof(camino2));
   strcpy(camino2, camino);
-  fprintf(stderr, "Proceso %d: Completadas %d escrituras en %sprueba.dat\n", acabados, NUMESCRITURAS, camino);
+  fprintf(stderr, "Completadas %d escrituras en %sprueba.dat\n", NUMESCRITURAS, camino);
   fflush(stderr);
-  //fprintf(stderr, "%sprueba.dat\n", camino);
   sprintf(camino2, "%sprueba.dat", camino2);
 
   //fprintf(stderr, "**DEBUG - camino completo: %s**\n",camino2);
