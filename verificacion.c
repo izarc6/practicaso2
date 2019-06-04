@@ -1,22 +1,25 @@
 #include "verificacion.h"
 
 int main (int argc, char **argv) {
+	// Comprobaciòn de sintaxis
 	if (argc != 3) {
 		fprintf(stderr, "uso: ./verificacion <disco> <directorio_simulacion>\n");
 		return -1;
 	}
 	char *ruta = argv[1];
-	bmount(ruta);
+	bmount(ruta);	// Montamos el disco
 	char *camino = argv[2];
 
 	fprintf(stderr, "dir_sim: %s\n", camino);
 
+	// Obtenimos las estadisticas de los ficheros del directorio
 	struct STAT stat;
 	if(mi_stat(camino, &stat) < 0){
 		fprintf(stderr, "verificacion.c --> No se ha podido obtener STAT\n");
 		return -1;
 	}
 
+	// Calculamos el n. de entradas
 	if(stat.tamEnBytesLog/sizeof(struct entrada) != NENTRADAS){
 		fprintf(stderr, "verificacion.c --> No aparecen 100 entradas\n");
 		return -1;
@@ -24,6 +27,7 @@ int main (int argc, char **argv) {
 
 	fprintf(stderr, "numentradas: %d NUMPROCESOS: %d\n", NENTRADAS, NUMPROCESOS);
 
+	// Creaciòn del fichero de informe
 	char camino_informe[100];
 	char aux[15];
 	strcpy(camino_informe,camino);
@@ -35,6 +39,7 @@ int main (int argc, char **argv) {
 		return -1;
 	}
 
+	// Creaciòn buffers de lectura
 	unsigned char buffer_ent[NENTRADAS*sizeof(struct entrada)];
 	memset(buffer_ent, 0, NENTRADAS*sizeof(struct entrada));
 	struct entrada *en;
