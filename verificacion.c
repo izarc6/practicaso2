@@ -50,7 +50,7 @@ int main (int argc, char **argv) {
 	unsigned int pid;
 
 	char path_prueba[100];
-	unsigned int bytesRe=1;
+	unsigned int bytesRe = 1;
 
 	char date [80];
 	struct tm *ts;
