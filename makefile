@@ -23,3 +23,4 @@ clean:
 	rm -rf *.o *~ $(PROGRAMS)
 	rm -rf disco
 	rm -rf ext*
+	rm -rf resultados.txt
