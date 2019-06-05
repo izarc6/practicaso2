@@ -61,7 +61,8 @@ int main (int argc, char **argv) {
 	struct tm *ts;
 
 	struct INFORMACION info;
-	struct REGISTRO buffreg[INDEX];
+	int cant_registros_buffer_escrituras = 256;
+	struct REGISTRO buffer_escrituras [cant_registros_buffer_escrituras];
 	char buffer_esc[BLOCKSIZE];
 	int off_info=0;
 
@@ -77,36 +78,36 @@ int main (int argc, char **argv) {
 		int j=0; int contador=0;
 
 		while(bytesRe>0 && contador<50){
-			memset(&buffreg, 0, sizeof(buffreg));
+			memset(&buffer_escrituras, 0, sizeof(buffer_escrituras));
 			//Leemos las 100 entradas que tiene que tener el fichero
-			if((bytesRe=mi_read(path_prueba, &buffreg, j*sizeof(struct REGISTRO), sizeof(buffreg))) < 0){
+			if((bytesRe=mi_read(path_prueba, &buffer_escrituras, j*sizeof(struct REGISTRO), sizeof(buffer_escrituras))) < 0){
 				fprintf(stderr, "verificacion.c --> Lectura de entrada incorrecta.\n");
 				return -1;
 			}
-			for (int n = 0; n < INDEX; n++) {
-				if(buffreg[n].pid==pid){
+			for (int n = 0; n < cant_registros_buffer_escrituras; n++) {
+				if(buffer_escrituras[n].pid==pid){
 					if (contador==0){
-						info.PrimeraEscritura=buffreg[n];
-						info.UltimaEscritura=buffreg[n];
-						info.MayorPosicion=buffreg[n];
-						info.MenorPosicion=buffreg[n];
+						info.PrimeraEscritura=buffer_escrituras[n];
+						info.UltimaEscritura=buffer_escrituras[n];
+						info.MayorPosicion=buffer_escrituras[n];
+						info.MenorPosicion=buffer_escrituras[n];
 					}
-					if (buffreg[n].nEscritura<info.PrimeraEscritura.nEscritura){
-						info.PrimeraEscritura=buffreg[n];
+					if (buffer_escrituras[n].nEscritura<info.PrimeraEscritura.nEscritura){
+						info.PrimeraEscritura=buffer_escrituras[n];
 					}
-					if (info.UltimaEscritura.nEscritura<buffreg[n].nEscritura){
-						info.UltimaEscritura=buffreg[n];
+					if (info.UltimaEscritura.nEscritura<buffer_escrituras[n].nEscritura){
+						info.UltimaEscritura=buffer_escrituras[n];
 					}
-					if (buffreg[n].nRegistro<info.MenorPosicion.nRegistro){
-						info.MenorPosicion=buffreg[n];
+					if (buffer_escrituras[n].nRegistro<info.MenorPosicion.nRegistro){
+						info.MenorPosicion=buffer_escrituras[n];
 					}
-					if (info.MayorPosicion.nRegistro<buffreg[n].nRegistro){
-						info.MayorPosicion=buffreg[n];
+					if (info.MayorPosicion.nRegistro<buffer_escrituras[n].nRegistro){
+						info.MayorPosicion=buffer_escrituras[n];
 					}
 					contador++;
 				}
 			}
-			j+=INDEX;
+			j+=cant_registros_buffer_escrituras;
 		}
 		memset(buffer_esc, 0, BLOCKSIZE);
 
